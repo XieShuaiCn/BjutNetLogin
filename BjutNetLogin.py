@@ -24,8 +24,7 @@ class BjutNet(threading.Thread):
             elif os.path.isfile(conf_file_model):
                 conf_file = conf_file_model
             else:
-                print("配置文件不存在！（%s|%s）" % (conf_file_home, conf_file_model))
-                return
+                raise Exception("配置文件不存在！（%s|%s）" % (conf_file_home, conf_file_model))
         else:
             conf_file_etc = "/etc/bjutnet.d/config.json"
             conf_file_home = os.path.join(os.environ['HOME'], ".bjutnet/config.json")
@@ -37,8 +36,7 @@ class BjutNet(threading.Thread):
             elif os.path.isfile(conf_file_model):
                 conf_file = conf_file_model
             else:
-                print("配置文件不存在！（%s|%s|%s）" % (conf_file_etc, conf_file_home, conf_file_model))
-                return
+                raise Exception("配置文件不存在！（%s|%s|%s）" % (conf_file_etc, conf_file_home, conf_file_model))
 
         with open(conf_file, "r") as f:
             text = f.read()
@@ -46,13 +44,13 @@ class BjutNet(threading.Thread):
             if "account" in json_arr:
                 self._account['account'] = json_arr['account']
             else:
-                print("未设置用户名(account)")
-                return
+                raise Exception("未设置用户名(account)")
+
             if "password" in json_arr:
                 self._account['password'] = json_arr['password']
             else:
-                print("未设置密码(password)")
-                return
+                raise Exception("未设置密码(password)")
+
             if "type" in json_arr:
                 self._account['type'] = int(json_arr['type'])
 
@@ -71,87 +69,93 @@ class BjutNet(threading.Thread):
             url = "https://lgn6.bjut.edu.cn"
             data['v46s'] = '2'
         elif self._account['type'] == 46:
-            url = "https://lgn.bjut.edu.cn"
+            url = "https://lgn6.bjut.edu.cn/V6?https://lgn.bjut.edu.cn"
             data['v46s'] = '0'
         else:
             return False, "未知的IP登录类型"
-        urldata = urllib.parse.urlencode(data).encode("gbk")
-        req = urllib.request.Request(url, data=urldata, headers=header)
-        request = urllib.request.urlopen(req)
-        if request is None:
-            return False, "打开网页失败"
-        if request.status > 400:
-            return False, "错误码：" + str(request.status)
-        content = request.read()
-        content = content.decode("gbk")
-        #若返回跳转网页，继续解析跳转网页
-        keyvalue = re.search(r"name='?(\w*)'? value='([:\w]*)'", content, re.U)
-        if keyvalue is not None:
-            url = "https://lgn.bjut.edu.cn"
-            data = []
-            for i in range(keyvalue.endpos):
-                data[keyvalue[i].group(1)] = keyvalue[i].group(2)
+        suc, msg = self.check()
+        if suc is True:
+            return True, "网关账号已登录"
+        try:
             urldata = urllib.parse.urlencode(data).encode("gbk")
             req = urllib.request.Request(url, data=urldata, headers=header)
             request = urllib.request.urlopen(req)
             if request is None:
-                return False, "跳转网页失败"
+                return False, "打开网页失败"
             if request.status > 400:
                 return False, "错误码：" + str(request.status)
             content = request.read()
             content = content.decode("gbk")
-        html_is_suc = "<title>登录成功窗</title>" in content
-        if html_is_suc:
-            return True, "登录成功"
-        html_is_msg = "<title>信息返回窗</title>" in content
-        if html_is_msg:
-            html_msg = re.search(r"Msg=(\d*?);", content, re.U).group(1)
-            html_msga = re.search(r"msga='(\w*?)';", content, re.U).group(1)
-            html_msg = int(html_msg)
-            msg = ""
-            suc = False
-            if html_msg == 1:
-                if len(html_msga) > 0:
-                    if html_msga == "error0":
-                        msg = "本IP不允许Web方式登录"
-                    elif html_msga == "error1":
-                        msg = "本账号不允许Web方式登录"
-                    elif html_msga == "error2":
-                        msg = "本账号不允许修改密码"
-                    else:
-                        msg = html_msga
-                else:
-                    msg = "账号或密码不对，请重新输入"
-            elif html_msg == 2:
-                msg = "该账号正在使用中，请您与网管联系"
-            elif html_msg == 3:
-                msg = "本账号只能在指定地址使用"
-            elif html_msg == 4:
-                msg = "本账号费用超支或时长流量超过限制"
-            elif html_msg == 5:
-                msg = "本账号暂停使用"
-            elif html_msg == 6:
-                msg = "系统缓存已满"
-            elif html_msg == 7:
+            #若返回跳转网页，继续解析跳转网页
+            keyvalue = re.search(r"name='?(\w*)'? value='([:\w]*)'", content, re.U)
+            if keyvalue is not None:
+                url = "https://lgn.bjut.edu.cn"
+                data = []
+                for i in range(keyvalue.endpos):
+                    data[keyvalue[i].group(1)] = keyvalue[i].group(2)
+                urldata = urllib.parse.urlencode(data).encode("gbk")
+                req = urllib.request.Request(url, data=urldata, headers=header)
+                request = urllib.request.urlopen(req)
+                if request is None:
+                    return False, "跳转网页失败"
+                if request.status > 400:
+                    return False, "错误码：" + str(request.status)
+                content = request.read()
+                content = content.decode("gbk")
+            html_is_suc = "<title>登录成功窗</title>" in content
+            if html_is_suc:
+                return True, "登录成功"
+            html_is_msg = "<title>信息返回窗</title>" in content
+            if html_is_msg:
+                html_msg = re.search(r"Msg=(\d*?);", content, re.U).group(1)
+                html_msga = re.search(r"msga='(\w*?)';", content, re.U).group(1)
+                html_msg = int(html_msg)
                 msg = ""
-            elif html_msg == 8:
-                msg = "本账号正在使用,不能修改"
-            elif html_msg == 9:
-                msg = "新密码与确认新密码不匹配,不能修改"
-            elif html_msg == 10:
-                msg = "密码修改成功"
-                suc = True
-            elif html_msg == 11:
-                msg = "本账号只能在指定地址使用"
-            elif html_msg == 14:
-                msg = "注销成功"
-                suc = True
-            elif html_msg == 15:
-                msg = "登录成功"
-                suc = True
-            return suc, msg
-        else:
-            return False, "登录失败"
+                suc = False
+                if html_msg == 1:
+                    if len(html_msga) > 0:
+                        if html_msga == "error0":
+                            msg = "本IP不允许Web方式登录"
+                        elif html_msga == "error1":
+                            msg = "本账号不允许Web方式登录"
+                        elif html_msga == "error2":
+                            msg = "本账号不允许修改密码"
+                        else:
+                            msg = html_msga
+                    else:
+                        msg = "账号或密码不对，请重新输入"
+                elif html_msg == 2:
+                    msg = "该账号正在使用中，请您与网管联系"
+                elif html_msg == 3:
+                    msg = "本账号只能在指定地址使用"
+                elif html_msg == 4:
+                    msg = "本账号费用超支或时长流量超过限制"
+                elif html_msg == 5:
+                    msg = "本账号暂停使用"
+                elif html_msg == 6:
+                    msg = "系统缓存已满"
+                elif html_msg == 7:
+                    msg = ""
+                elif html_msg == 8:
+                    msg = "本账号正在使用,不能修改"
+                elif html_msg == 9:
+                    msg = "新密码与确认新密码不匹配,不能修改"
+                elif html_msg == 10:
+                    msg = "密码修改成功"
+                    suc = True
+                elif html_msg == 11:
+                    msg = "本账号只能在指定地址使用"
+                elif html_msg == 14:
+                    msg = "注销成功"
+                    suc = True
+                elif html_msg == 15:
+                    msg = "登录成功"
+                    suc = True
+                return suc, msg
+            else:
+                return False, "登录失败"
+        except Exception as ex:
+            return False, str(ex)
 
     def check(self):
         """检查北工大网关状态"""
@@ -191,12 +195,14 @@ class BjutNet(threading.Thread):
 
     def run(self):
         is_login = False
+        last_time = 0
         while True:
             suc, msg = self.check()
             if suc is True:
-                # 首次登录时输出信息
-                if not is_login:
+                # 首次登录时或间隔一段时间输出信息
+                if (not is_login) or (time.time() - last_time > 1800):
                     print(time.asctime(), msg)
+                    last_time = time.time()
                 is_login = True
                 time.sleep(30)
             else:
@@ -221,5 +227,8 @@ class BjutNet(threading.Thread):
 
 
 if __name__ == "__main__":
-    net = BjutNet()
-    net.start_monitor()
+    try:
+        net = BjutNet()
+        net.start_monitor()
+    except Exception as ex:
+        print(str(ex))
