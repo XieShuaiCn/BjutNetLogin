@@ -13,9 +13,9 @@ class BjutNet (threading.Thread):
         threading.Thread.__init__(self)
         # 获取这个脚本的路径
         model_path = os.path.split(os.path.realpath(__file__))[0]
-        conf_file_etc = "/etc/bjutnet.d/config.example.json"
-        conf_file_home = "~/.bjutnet/config.example.json"
-        conf_file_model = os.path.join(model_path, "config.example.json")
+        conf_file_etc = "/etc/bjutnet.d/config.json"
+        conf_file_home = os.path.join(os.environ['HOME'], ".bjutnet/config.json")
+        conf_file_model = os.path.join(model_path, "config.json")
         if os.path.isfile(conf_file_etc):
             conf_file = conf_file_etc
         elif os.path.isfile(conf_file_home):
