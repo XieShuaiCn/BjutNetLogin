@@ -1,6 +1,7 @@
 #include "WndTrayIcon.h"
 #include <QMenu>
 #include <QApplication>
+#include <QLocalSocket>
 
 WndTrayIcon::WndTrayIcon(QApplication *app,WndMain *parent):
     QSystemTrayIcon(parent),
@@ -79,5 +80,16 @@ void WndTrayIcon::on_actived(QSystemTrayIcon::ActivationReason reason)
         break;
     default:
         break;
+    }
+}
+
+void WndTrayIcon::reciveMessage(const QString &msg)
+{
+    const char *m = msg.toStdString().data();
+    if(0==strcmp(m, "ShowMainWnd")){
+        on_actMenuShowMain_trigger();
+    }
+    else if(0==strcmp(m, "Exit")){
+        on_actMenuQuit_trigger();
     }
 }

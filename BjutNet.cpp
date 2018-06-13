@@ -266,14 +266,14 @@ bool BjutNet::load_account(const QString path)
         if(!fi->exists())
         {
 #ifndef Q_OS_WIN
+            delete fi;
             QString conf_file_etc = "/etc/bjutnet.d/account.json";
             fi = new QFileInfo(conf_file_etc);
             if(!fi->exists())
             {
-                delete fi;
 #endif
-                QString conf_file_model = (QDir::currentPath() + "/account.json");
                 delete fi;
+                QString conf_file_model = (QDir::currentPath() + "/account.json");
                 fi = new QFileInfo(conf_file_model);
                 if(!fi->exists())
                 {

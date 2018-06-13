@@ -4,8 +4,9 @@
 #
 #-------------------------------------------------
 
-QT       += core gui
-QT       += network
+QT       += core \
+            gui \
+            network
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -43,11 +44,12 @@ HEADERS += \
     WndMain.h \
     WndTrayIcon.h
 
-FORMS += \
-        MainWnd.ui
-
 DISTFILES += \
-    C:/Users/XIESHUAI/.bjutnet/account.json
+    C:/Users/XIESHUAI/.bjutnet/account.json \
+    /home/xieshuai/.bjutnet/account.json \
+    ReadMe.txt
 
 RESOURCES += \
     all.qrc
+
+include(qtsingleapplication/src/qtsingleapplication.pri)

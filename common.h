@@ -6,4 +6,8 @@
 #include <QWidget>
 #include <QException>
 
+#ifndef UNUSED
+#define UNUSED(x) (void)x
+#endif
+
 #endif // COMMON_H

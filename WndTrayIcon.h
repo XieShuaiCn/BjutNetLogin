@@ -5,6 +5,7 @@
 #include "WndMain.h"
 #include <QTimer>
 #include <QSystemTrayIcon>
+#include <QLocalServer>
 
 class WndTrayIcon : public QSystemTrayIcon
 {
@@ -15,11 +16,15 @@ public:
 Q_SIGNALS:
     void quitApp();
 
+public slots:
+    void reciveMessage(const QString &msg);
+
 protected slots:
     void on_actived(QSystemTrayIcon::ActivationReason reason);
     void on_clicked();
     void on_actMenuQuit_trigger();
     void on_actMenuShowMain_trigger();
+    void socket_newConnection();
 
     QTimer m_tmClick;
 
