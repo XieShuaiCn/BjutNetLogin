@@ -1,3 +1,6 @@
+.git
+.gitignore
+
 # C++ objects and libs
 
 *.slo
@@ -44,4 +47,3 @@ target_wrapper.*
 
 # QtCtreator CMake
 CMakeLists.txt.user*
-

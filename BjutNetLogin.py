@@ -2,35 +2,63 @@ import urllib.parse, urllib.request
 import re
 import threading
 import time
+import json
+import os
 
-BJUT_NET_ACCOUNT = "S201761356"
-BJUT_NET_PASSWORD = "192837"
-# 登陆类型：4、6、46
-BJUT_NET_TYPE = 4
 
 class BjutNet (threading.Thread):
     """北京工业大学网关管理类"""
 
     def __init__(self):
         threading.Thread.__init__(self)
+        # 获取这个脚本的路径
+        model_path = os.path.split(os.path.realpath(__file__))[0]
+        conf_file_etc = "/etc/bjutnet.d/config.example.json"
+        conf_file_home = "~/.bjutnet/config.example.json"
+        conf_file_model = os.path.join(model_path, "config.example.json")
+        if os.path.isfile(conf_file_etc):
+            conf_file = conf_file_etc
+        elif os.path.isfile(conf_file_home):
+            conf_file = conf_file_home
+        elif os.path.isfile(conf_file_model):
+            conf_file = conf_file_model
+        else:
+            print("配置文件不存在！（%s|%s|%s）" % (conf_file_etc, conf_file_home, conf_file_model))
+            return
+
+        with open(conf_file, "r") as f:
+            text = f.read()
+            json_arr = json.loads(text)
+            if "account" in json_arr:
+                self._account['account'] = json_arr['account']
+            else:
+                print("未设置用户名(account)")
+                return
+            if "password" in json_arr:
+                self._account['password'] = json_arr['password']
+            else:
+                print("未设置密码(password)")
+                return
+            if "type" in json_arr:
+                self._account['type'] = int(json_arr['type'])
 
     def login(self):
         """登陆北工大网关"""
         # 构造表单
-        data = {"DDDDD":BJUT_NET_ACCOUNT, "upass":BJUT_NET_PASSWORD, "v46s":'1', "v6ip":'',"f4serip":"172.30.201.10", "0MKKey":""}
-        header = {"User-Agent":"Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/64.0.3282.167 Safari/537.36",
-                  "Content-Type":"application/x-www-form-urlencoded"}
-        if BJUT_NET_TYPE == 4:
+        data = {"DDDDD": self._account['account'], "upass": self._account['password'], "v46s": '1', "v6ip": '', "f4serip": "172.30.201.10", "0MKKey": ""}
+        header = {"User-Agent": "Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/64.0.3282.167 Safari/537.36",
+                  "Content-Type": "application/x-www-form-urlencoded"}
+        if self._account['type'] == 4:
             url = "https://lgn.bjut.edu.cn"
             data['v46s'] = '1'
-        elif BJUT_NET_TYPE == 6:
+        elif self._account['type'] == 6:
             url = "https://lgn6.bjut.edu.cn"
             data['v46s'] = '2'
-        elif BJUT_NET_TYPE == 46:
+        elif self._account['type'] == 46:
             url = "https://lgn6.bjut.edu.cn/V6?https://lgn.bjut.edu.cn"
             data['v46s'] = '0'
         else:
-            return False, "未知的IP类型"
+            return False, "未知的IP登录类型"
         urldata = urllib.parse.urlencode(data).encode("gbk")
         req = urllib.request.Request(url, data=urldata, headers=header)
         request = urllib.request.urlopen(req)
@@ -45,8 +73,8 @@ class BjutNet (threading.Thread):
             return True, "登录成功"
         html_is_msg = "<title>信息返回窗</title>" in content
         if html_is_msg:
-            html_msg = re.search("Msg=(\d*?);", content, re.U).group(1)
-            html_msga = re.search("msga='(\w*?)';", content, re.U).group(1)
+            html_msg = re.search(r"Msg=(\d*?);", content, re.U).group(1)
+            html_msga = re.search(r"msga='(\w*?)';", content, re.U).group(1)
             html_msg = int(html_msg)
             msg = ""
             suc = False
@@ -150,6 +178,8 @@ class BjutNet (threading.Thread):
         """停止监控网关状态"""
         if self.isAlive():
             self.join()
+
+    _account = {"account": "", "password": "", "type": 4}
 
 
 if __name__ == "__main__":
