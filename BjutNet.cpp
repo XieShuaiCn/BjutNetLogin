@@ -14,7 +14,8 @@
 
 BjutNet::BjutNet() :
     QThread(),
-    m_type(IPv4),
+    m_loginType(IPv4),
+    m_netType(UnknownNet),
     m_nTime(0.0f),
     m_nFlow(0.0f),
     m_nFee(0.0f)
@@ -24,32 +25,83 @@ BjutNet::BjutNet() :
 
 bool BjutNet::login(QString& msg)
 {
-    msg.clear();
-
     if(m_strAccount.length() == 0)
     {
         msg.append("Your account has not been setted.");
         return false;
     }
 
+    QString test =  getUrl(QUrl("http://lgn.bjut.edu.cn"));
+    if(test.size() == 0)
+    {
+        test =  getUrl(QUrl("http://wlgn.bjut.edu.cn/0.htm"));
+        if (test.size() == 0)
+        {
+            m_netType = UnknownNet;
+            msg.append("当前无法访问校园网，请稍候重试。\n");
+            return false;
+        }
+        else
+        {
+            m_netType = WIFI;
+            return loginOnWIFI(msg);
+        }
+    }
+    else
+    {
+        m_netType = LAN;
+        return loginOnLAN(msg);
+    }
+    msg.append("Program should not reach here.");
+    return false;
+}
+
+bool BjutNet::loginOnLAN(QString &msg, LoginType type)
+{
     QString url;
     int v46s = 0;
+    bool ipv4_login = false;
+    bool ipv6_login = false;
 
-    switch (m_type) {
+    if(type == AutoLoginType)
+    {
+        type = this->m_loginType;
+    }
+
+    switch (type) {
+    case AutoLoginType:
     case IPv4:
         v46s = 1;
         url = "https://lgn.bjut.edu.cn";
+        if(check(msg, IPv4))
+        {
+            return true;
+        }
         break;
     case IPv6:
         v46s = 2;
         url = "https://lgn6.bjut.edu.cn";
+        if(check(msg, IPv6))
+        {
+            return true;
+        }
         break;
     case IPv4_6:
         v46s = 0;
         url = "https://lgn6.bjut.edu.cn/V6?https://lgn.bjut.edu.cn";
+        ipv4_login = check(msg, IPv4);
+        ipv6_login = check(msg, IPv6);
+        if(!ipv4_login && ipv6_login)
+        {
+            return loginOnLAN(msg, IPv4);
+        }
+        if(ipv4_login && !ipv6_login)
+        {
+            return loginOnLAN(msg, IPv6);
+        }
         break;
     default:
-        msg.append("无法识别的登录类型");
+        msg.append("无法识别的登录类型\n");
         return false;
     }
 
@@ -79,7 +131,7 @@ bool BjutNet::login(QString& msg)
     }
     if(content.contains("<title>登录成功窗</title>"))
     {
-        msg.append("登录成功");
+        msg.append("登录成功\n");
         return true;
     }
     if(content.contains("<title>信息返回窗</title>"))
@@ -88,7 +140,7 @@ bool BjutNet::login(QString& msg)
         pos = content.indexOf(regMsg);
         if(pos < 0)
         {
-            msg.append("未检测到返回消息");
+            msg.append("未检测到返回消息\n");
             emit status_update(false, m_nTime, m_nFlow, m_nFee);
             return false;
         }
@@ -108,12 +160,65 @@ bool BjutNet::login(QString& msg)
     return false;
 }
 
+bool BjutNet::loginOnWIFI(QString &msg, LoginType type)
+{
+    QString url;
+    bool ipv6_succ = true;
+
+    if(type == AutoLoginType)
+    {
+        type = this->m_loginType;
+    }
+
+    switch (type) {
+    case IPv4:
+        url = "https://wlgn.bjut.edu.cn";
+        break;
+    case IPv6://IPv6不区分有线还是无线
+        return loginOnLAN(msg, IPv6);
+        break;
+    case IPv4_6:
+        ipv6_succ = loginOnLAN(msg, IPv6);
+        url = "https://wlgn.bjut.edu.cn";
+        break;
+    default:
+        msg.append("无法识别的登录类型");
+        return false;
+    }
+
+    // 设置发送的数据
+    QMap<QString, QString> data;
+    data.insert("DDDDD", m_strAccount);
+    data.insert("upass", m_strPassword);
+    data.insert("6MKKey", "1");
+    QString content = postUrl(QUrl(url), data);
+    content = getUrl(QUrl("https://wlgn.bjut.edu.cn/1.htm"));
+    if(content.size() > 0)
+    {
+        if(content.indexOf("You have successfully logged in"))
+        {
+            msg.append("IPv4登录成功");
+            return ipv6_succ;
+        }
+    }
+    return false;
+}
+
 bool BjutNet::logout(QString &msg)
 {
-    msg.clear();
+    return WIFI == m_netType ? logoutOnWIFI(msg) : logoutOnLAN(msg);
+}
+
+bool BjutNet::logoutOnLAN(QString &msg, LoginType type)
+{
+    if(type == AutoLoginType)
+    {
+        type = this->m_loginType;
+    }
+
     QUrl url6("http://lgn6.bjut.edu.cn/F.htm");
     QUrl url4("http://lgn.bjut.edu.cn/F.htm");
-    QString content = getUrl(IPv6 == m_type ? url6 : url4);
+    QString content = getUrl(IPv6 == type ? url6 : url4);
     QRegExp regMsg("Msg=(\\d+);", Qt::CaseInsensitive);
     QRegExp regTime("time='(\\d+) *';", Qt::CaseInsensitive);
     QRegExp regFlow("flow='(\\d+) *';", Qt::CaseInsensitive);
@@ -121,7 +226,7 @@ bool BjutNet::logout(QString &msg)
     int pos = content.indexOf(regMsg);
     if(pos < 0)
     {
-        msg.append("未检测到返回消息\r\n");
+        msg.append("未检测到返回消息。\n");
         emit status_update(false, m_nTime, m_nFlow, m_nFee);
         return false;
     }
@@ -130,32 +235,92 @@ bool BjutNet::logout(QString &msg)
     pos = content.indexOf(regTime);
     if(pos < 0)
     {
-        msg.append("未检测到时间\r\n");
+        msg.append("未检测到时间。\n");
         QString html_time = regTime.cap(1);
         m_nTime = html_time.toInt();
     }
     pos = content.indexOf(regFlow);
     if(pos < 0)
     {
-        msg.append("未检测到流量\r\n");
+        msg.append("未检测到流量。\n");
         QString html_flow = regFlow.cap(1);
         m_nFlow = html_flow.toInt();
     }
     pos = content.indexOf(regFee);
     if(pos < 0)
     {
-        msg.append("未检测到费用\r\n");
+        msg.append("未检测到费用。\n");
         QString html_fee = regFee.cap(1);
         m_nFee = html_fee.toInt() / 100;
     }
-    msg.sprintf("已用时间：%.3f小时，已用流量：%.3fMB，剩余金额：%.2f元\r\n",
+    msg.sprintf("已用时间：%.3f小时，已用流量：%.3fMB，剩余金额：%.2f元。\n",
                 float(m_nTime) / 60, float(m_nFlow) / 1024, float(m_nFee) / 100);
     emit status_update(false, m_nTime, m_nFlow, m_nFee);
     msg.append(msgID == 14 ? "注销成功" : "注销失败");
     return msgID == 14;
 }
 
-bool BjutNet::check(QString& msg)
+bool BjutNet::logoutOnWIFI(QString &msg, LoginType type)
+{
+    bool ipv6_succ = true;
+    if(type == AutoLoginType)
+    {
+        type = this->m_loginType;
+    }
+
+    if(type == IPv4_6)
+    {
+        ipv6_succ = logoutOnLAN(msg, IPv6);
+    }
+    else if(type == IPv6)
+    {
+        return logoutOnLAN(msg, IPv6);
+    }
+
+    QUrl url4("http://Wlgn.bjut.edu.cn/F.htm");
+    QString content = getUrl(url4);
+    QRegExp regMsg("Msg=(\\d+);", Qt::CaseInsensitive);
+    QRegExp regTime("time='(\\d+) *';", Qt::CaseInsensitive);
+    QRegExp regFlow("flow='(\\d+) *';", Qt::CaseInsensitive);
+    QRegExp regFee("fee='(\\d+) *';", Qt::CaseInsensitive);
+    int pos = content.indexOf(regMsg);
+    if(pos < 0)
+    {
+        msg.append("未检测到返回消息。\n");
+        emit status_update(false, m_nTime, m_nFlow, m_nFee);
+        return false;
+    }
+    QString html_msg = regMsg.cap(1);
+    int msgID = html_msg.toInt();
+    pos = content.indexOf(regTime);
+    if(pos < 0)
+    {
+        msg.append("未检测到时间。\n");
+        QString html_time = regTime.cap(1);
+        m_nTime = html_time.toInt();
+    }
+    pos = content.indexOf(regFlow);
+    if(pos < 0)
+    {
+        msg.append("未检测到流量。\n");
+        QString html_flow = regFlow.cap(1);
+        m_nFlow = html_flow.toInt();
+    }
+    pos = content.indexOf(regFee);
+    if(pos < 0)
+    {
+        msg.append("未检测到费用。\n");
+        QString html_fee = regFee.cap(1);
+        m_nFee = html_fee.toInt() / 100;
+    }
+    msg.sprintf("已用时间：%.3f小时，已用流量：%.3fMB，剩余金额：%.2f元。\n",
+                float(m_nTime) / 60, float(m_nFlow) / 1024, float(m_nFee) / 100);
+    emit status_update(false, m_nTime, m_nFlow, m_nFee);
+    msg.append(msgID == 14 ? "注销成功" : "注销失败");
+    return ipv6_succ && msgID == 14;
+}
+
+bool BjutNet::check(QString& msg, LoginType type)
 {
     msg.clear();
     QUrl url6("https://lgn6.bjut.edu.cn/");
@@ -166,14 +331,19 @@ bool BjutNet::check(QString& msg)
     QRegExp regFlow("flow='(\\d+) *';", Qt::CaseInsensitive);
     QRegExp regFee("fee='(\\d+) *';", Qt::CaseInsensitive);
 
+    if(AutoLoginType == type)
+    {
+        type = this->m_loginType;
+    }
+
     //分析网页
-    if(m_type == IPv4_6)
+    if(type == IPv4_6)
     {
         QString content = getUrl(url6);
         int pos = content.indexOf(regTime);
         if(pos < 0)
         {
-            msg.append("没有登录网关6，未检测到时间");
+            msg.append("没有登录网关6，未检测到时间\n");
             emit status_update(false, m_nTime, m_nFlow, m_nFee);
             return false;
         }
@@ -181,49 +351,50 @@ bool BjutNet::check(QString& msg)
         pos = content.indexOf(regTime);
         if(pos < 0)
         {
-            msg.append("没有登录网关4，未检测到时间");
+            msg.append("没有登录网关4，未检测到时间\n");
             emit status_update(false, m_nTime, m_nFlow, m_nFee);
             return false;
         }
         pos = content.indexOf(regFlow);
         if(pos < 0)
         {
-            msg.append("没有登录网关4，未检测到流量");
+            msg.append("没有登录网关4，未检测到流量\n");
             emit status_update(false, m_nTime, m_nFlow, m_nFee);
             return false;
         }
         pos = content.indexOf(regFee);
         if(pos < 0)
         {
-            msg.append("没有登录网关4，未检测到费用");
+            msg.append("没有登录网关4，未检测到费用\n");
             emit status_update(false, m_nTime, m_nFlow, m_nFee);
             return false;
         }
     }
     else
     {
-        QString content = getUrl(IPv4 == m_type ? url4 : url6);
+        QString content = getUrl(IPv4 == type ? url4 : url6);
+        QString errmsg("没有登录网关\1，未检测到\2\n");
 #ifdef QT_DEBUG
-        qDebug() << content << "\r\n";
+        qDebug() << content << "\n";
 #endif
         int pos = content.indexOf(regTime);
         if(pos < 0)
         {
-            msg.append("没有登录网关，未检测到时间");
+            msg.append(errmsg.arg(IPv4 == type ? 4 : 6).arg("时间"));
             emit status_update(false, m_nTime, m_nFlow, m_nFee);
             return false;
         }
         pos = content.indexOf(regFlow);
         if(pos < 0)
         {
-            msg.append("没有登录网关，未检测到流量");
+            msg.append(errmsg.arg(IPv4 == type ? 4 : 6).arg("流量"));
             emit status_update(false, m_nTime, m_nFlow, m_nFee);
             return false;
         }
         pos = content.indexOf(regFee);
         if(pos < 0)
         {
-            msg.append("没有登录网关，未检测到费用");
+            msg.append(errmsg.arg(IPv4 == type ? 4 : 6).arg("费用"));
             emit status_update(false, m_nTime, m_nFlow, m_nFee);
             return false;
         }
@@ -234,7 +405,7 @@ bool BjutNet::check(QString& msg)
     m_nTime = html_time.toInt();
     m_nFlow = html_flow.toInt();
     m_nFee = html_fee.toInt() / 100;
-    msg.sprintf("已用时间：%.3f小时，已用流量：%.3fMB，剩余金额：%.2f元",
+    msg.sprintf("已用时间：%.3f小时，已用流量：%.3fMB，剩余金额：%.2f元\n",
                 float(m_nTime) / 60, float(m_nFlow) / 1024, float(m_nFee) / 100);
     emit status_update(true, m_nTime, m_nFlow, m_nFee);
 
@@ -277,7 +448,7 @@ bool BjutNet::load_account(const QString path)
                 fi = new QFileInfo(conf_file_model);
                 if(!fi->exists())
                 {
-                    emit message(QDateTime::currentDateTime(), "cannot find any configure files.\r\n");
+                    emit message(QDateTime::currentDateTime(), "cannot find any configure files.\n");
                     delete fi;
                     return false;
                 }
@@ -292,7 +463,7 @@ bool BjutNet::load_account(const QString path)
     }
     if(!fi->exists())
     {
-        emit message(QDateTime::currentDateTime(), "cannot find the configure file("+fi->fileName()+").\r\n");
+        emit message(QDateTime::currentDateTime(), "cannot find the configure file("+fi->fileName()+").\n");
         delete fi;
         return false;
     }
@@ -317,7 +488,15 @@ bool BjutNet::load_account(const QString path)
             }
             if(jo.contains("type"))
             {
-                m_type = LoginType(jo["type"].toInt());
+                m_loginType = LoginType(jo["type"].toInt()+1);
+            }
+            if(jo.contains("ipv4"))
+            {
+                m_loginType = LoginType(m_loginType & ((jo["ipv4"].toInt() % 2) * int(IPv4)));
+            }
+            if(jo.contains("ipv6"))
+            {
+                m_loginType = LoginType(m_loginType & ((jo["ipv6"].toInt() % 2) * int(IPv6)));
             }
             return true;
         }
@@ -366,7 +545,7 @@ bool BjutNet::save_account(const QString path)
         QJsonObject jo;
         jo.insert("account", m_strAccount);
         jo.insert("password", m_strPassword);
-        jo.insert("type", int(m_type));
+        jo.insert("type", int(m_loginType));
         QJsonDocument jd;
         jd.setObject(jo);
         QByteArray data= jd.toJson(QJsonDocument::Compact);
@@ -399,6 +578,11 @@ QString BjutNet::getUrl(QUrl url)
     //等待回应
     loop.exec();
 
+    if(pReply->error() != QNetworkReply::NoError)//error
+    {
+        message(QDateTime::currentDateTime(), QString("Get url error:%1").arg(pReply->errorString()));
+        return QString();
+    }
     //读取
     QByteArray data = pReply->readAll();
 #ifdef QT_DEBUG
@@ -459,6 +643,11 @@ QString BjutNet::postUrl(QUrl url, QString arg)
     //等待回应
     loop.exec();
 
+    if(pReply->error() != QNetworkReply::NoError)//error
+    {
+        message(QDateTime::currentDateTime(), QString("Post url error:%1").arg(pReply->errorString()));
+        return QString();
+    }
     //读取
     QByteArray data = pReply->readAll();
 #ifdef QT_DEBUG
@@ -546,6 +735,7 @@ void BjutNet::run()
     QString msg;
     while(true)
     {
+        msg.clear();
         suc = this->check(msg);
         time = QDateTime::currentDateTime();
         if (suc)
@@ -563,6 +753,7 @@ void BjutNet::run()
             //登录
             is_login = false;
             emit message(time, msg);
+            msg.clear();
             suc = this->login(msg);
             time = QDateTime::currentDateTime();
             emit message(time, msg);

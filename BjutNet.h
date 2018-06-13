@@ -14,16 +14,23 @@ class BjutNet : public QThread
 public:
     //登录类型
     enum LoginType{
-        IPv4, IPv6, IPv4_6
+        AutoLoginType = 0, IPv4 = 1, IPv6 = 2, IPv4_6 = 3
+    };
+    enum NetType{
+        UnknownNet = 0, LAN = 1, WIFI = 2
     };
     //构造函数
     explicit BjutNet();
     //登录网关
     bool login(QString& msg);
+    bool loginOnLAN(QString& msg, LoginType type = AutoLoginType);
+    bool loginOnWIFI(QString& msg, LoginType type = AutoLoginType);
     //注销网关
     bool logout(QString& msg);
+    bool logoutOnLAN(QString& msg, LoginType type = AutoLoginType);
+    bool logoutOnWIFI(QString& msg, LoginType type = AutoLoginType);
     //检测网关状态
-    bool check(QString& msg);
+    bool check(QString& msg, LoginType type = AutoLoginType);
     //启动监视器
     bool start_monitor();
     //停止监视器
@@ -60,18 +67,22 @@ public:
     {
         m_strPassword = password;
     }
-    LoginType getType()
+    LoginType getLoginType()
     {
-        return m_type;
+        return m_loginType;
     }
-    void setType(LoginType type)
+    void setLoginType(LoginType type)
     {
-        m_type = type;
+        m_loginType = type;
     }
-    void setType(int type)
+    void setLoginType(int type)
     {
-        if(type >= 0 && type < 3)
-            m_type = LoginType(type);
+        if(type > 0 && type <= 3)
+            m_loginType = LoginType(type);
+    }
+    NetType getNetType()
+    {
+        return m_netType;
     }
 protected:
     void run();
@@ -86,7 +97,8 @@ private:
     //账号信息
     QString m_strAccount;
     QString m_strPassword;
-    LoginType m_type;
+    LoginType m_loginType;
+    NetType m_netType;
     int m_nTime;//分钟
     int m_nFlow;//KB
     int m_nFee;//分

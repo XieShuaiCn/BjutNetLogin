@@ -199,7 +199,7 @@ void WndMain::on_close(QCloseEvent *event)
 void WndMain:: on_show()
 {
     m_editAccount->setText(m_net.getAccount());
-    m_cmbType->setCurrentIndex(int(m_net.getType()));
+    m_cmbType->setCurrentIndex(int(m_net.getLoginType())-1);
     //更新页面显示的流量状态
     on_account_status(m_net.getTime() > 0, m_net.getTime(), m_net.getFlow(), m_net.getFee());
     //QString msg;
@@ -241,14 +241,14 @@ void WndMain::on_account_status(bool login, int time, int flow, int fee)
 
 void WndMain::on_txtMsg_message(const QDateTime& time, const QString& info)
 {
-    m_txtMsg->append(time.toString("yyyy-MM-dd hh:mm:ss  ") + (info.endsWith('\n') ? info : (info + "\r\n")));
+    m_txtMsg->append(time.toString("yyyy-MM-dd hh:mm:ss  ") + (info.endsWith('\n') ? info : (info + '\n')));
 }
 
 void WndMain::on_btnApply_click()
 {
     m_net.setAccount(m_editAccount->text());
     m_net.setPassword(m_editPassword->text());
-    m_net.setType(m_cmbType->currentIndex());
+    m_net.setLoginType(m_cmbType->currentIndex());
     if(m_net.save_account())
     {
         on_txtMsg_message(QDateTime::currentDateTime(), "账号信息保存成功");
