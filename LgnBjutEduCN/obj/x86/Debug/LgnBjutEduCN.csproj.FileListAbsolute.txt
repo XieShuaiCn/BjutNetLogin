@@ -1,0 +1,14 @@
+F:\MyWorks\VC#2010\LgnBjutEduCN\LgnBjutEduCN\bin\Debug\LgnBjutEduCN.exe
+F:\MyWorks\VC#2010\LgnBjutEduCN\LgnBjutEduCN\bin\Debug\LgnBjutEduCN.pdb
+F:\MyWorks\VC#2010\LgnBjutEduCN\LgnBjutEduCN\bin\Debug\WebKitBrowser.dll
+F:\MyWorks\VC#2010\LgnBjutEduCN\LgnBjutEduCN\obj\x86\Debug\ResolveAssemblyReference.cache
+F:\MyWorks\VC#2010\LgnBjutEduCN\LgnBjutEduCN\obj\x86\Debug\LgnBjutEduCN.Form1.resources
+F:\MyWorks\VC#2010\LgnBjutEduCN\LgnBjutEduCN\obj\x86\Debug\LgnBjutEduCN.Properties.Resources.resources
+F:\MyWorks\VC#2010\LgnBjutEduCN\LgnBjutEduCN\obj\x86\Debug\GenerateResource.read.1.tlog
+F:\MyWorks\VC#2010\LgnBjutEduCN\LgnBjutEduCN\obj\x86\Debug\GenerateResource.write.1.tlog
+F:\MyWorks\VC#2010\LgnBjutEduCN\LgnBjutEduCN\obj\x86\Debug\LgnBjutEduCN.exe
+F:\MyWorks\VC#2010\LgnBjutEduCN\LgnBjutEduCN\obj\x86\Debug\LgnBjutEduCN.pdb
+F:\MyWorks\VC#2010\LgnBjutEduCN\LgnBjutEduCN\bin\Debug\WebKit.Interop.dll
+F:\MyWorks\VC#2010\LgnBjutEduCN\LgnBjutEduCN\bin\Debug\LgnBjutEduCN.exe.config
+F:\MyWorks\VC#2010\LgnBjutEduCN\LgnBjutEduCN\obj\x86\Debug\ResGen.read.1.tlog
+F:\MyWorks\VC#2010\LgnBjutEduCN\LgnBjutEduCN\obj\x86\Debug\ResGen.write.1.tlog
