@@ -1,30 +1,44 @@
+# encoding=utf-8
 import urllib.parse, urllib.request
 import re
 import threading
 import time
 import json
 import os
+import platform
 
 
-class BjutNet (threading.Thread):
+class BjutNet(threading.Thread):
     """北京工业大学网关管理类"""
 
     def __init__(self):
         threading.Thread.__init__(self)
         # 获取这个脚本的路径
         model_path = os.path.split(os.path.realpath(__file__))[0]
-        conf_file_etc = "/etc/bjutnet.d/config.json"
-        conf_file_home = os.path.join(os.environ['HOME'], ".bjutnet/config.json")
-        conf_file_model = os.path.join(model_path, "config.json")
-        if os.path.isfile(conf_file_etc):
-            conf_file = conf_file_etc
-        elif os.path.isfile(conf_file_home):
-            conf_file = conf_file_home
-        elif os.path.isfile(conf_file_model):
-            conf_file = conf_file_model
+        os_name = platform.platform()
+        if os_name.startswith('Windows'):
+            conf_file_home = os.path.join(os.path.expanduser('~'), ".bjutnet/config.json")
+            conf_file_model = os.path.join(model_path, "config.json")
+            if os.path.isfile(conf_file_home):
+                conf_file = conf_file_home
+            elif os.path.isfile(conf_file_model):
+                conf_file = conf_file_model
+            else:
+                print("配置文件不存在！（%s|%s）" % (conf_file_home, conf_file_model))
+                return
         else:
-            print("配置文件不存在！（%s|%s|%s）" % (conf_file_etc, conf_file_home, conf_file_model))
-            return
+            conf_file_etc = "/etc/bjutnet.d/config.json"
+            conf_file_home = os.path.join(os.environ['HOME'], ".bjutnet/config.json")
+            conf_file_model = os.path.join(model_path, "config.json")
+            if os.path.isfile(conf_file_etc):
+                conf_file = conf_file_etc
+            elif os.path.isfile(conf_file_home):
+                conf_file = conf_file_home
+            elif os.path.isfile(conf_file_model):
+                conf_file = conf_file_model
+            else:
+                print("配置文件不存在！（%s|%s|%s）" % (conf_file_etc, conf_file_home, conf_file_model))
+                return
 
         with open(conf_file, "r") as f:
             text = f.read()
@@ -45,9 +59,11 @@ class BjutNet (threading.Thread):
     def login(self):
         """登陆北工大网关"""
         # 构造表单
-        data = {"DDDDD": self._account['account'], "upass": self._account['password'], "v46s": '1', "v6ip": '', "f4serip": "172.30.201.10", "0MKKey": ""}
-        header = {"User-Agent": "Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/64.0.3282.167 Safari/537.36",
-                  "Content-Type": "application/x-www-form-urlencoded"}
+        data = {"DDDDD": self._account['account'], "upass": self._account['password'], "v46s": '1', "v6ip": '',
+                "f4serip": "172.30.201.10", "0MKKey": ""}
+        header = {
+            "User-Agent": "Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/64.0.3282.167 Safari/537.36",
+            "Content-Type": "application/x-www-form-urlencoded"}
         if self._account['type'] == 4:
             url = "https://lgn.bjut.edu.cn"
             data['v46s'] = '1'
@@ -55,7 +71,7 @@ class BjutNet (threading.Thread):
             url = "https://lgn6.bjut.edu.cn"
             data['v46s'] = '2'
         elif self._account['type'] == 46:
-            url = "https://lgn6.bjut.edu.cn/V6?https://lgn.bjut.edu.cn"
+            url = "https://lgn.bjut.edu.cn"
             data['v46s'] = '0'
         else:
             return False, "未知的IP登录类型"
@@ -68,6 +84,22 @@ class BjutNet (threading.Thread):
             return False, "错误码：" + str(request.status)
         content = request.read()
         content = content.decode("gbk")
+        #若返回跳转网页，继续解析跳转网页
+        keyvalue = re.search(r"name='?(\w*)'? value='([:\w]*)'", content, re.U)
+        if keyvalue is not None:
+            url = "https://lgn.bjut.edu.cn"
+            data = []
+            for i in range(keyvalue.endpos):
+                data[keyvalue[i].group(1)] = keyvalue[i].group(2)
+            urldata = urllib.parse.urlencode(data).encode("gbk")
+            req = urllib.request.Request(url, data=urldata, headers=header)
+            request = urllib.request.urlopen(req)
+            if request is None:
+                return False, "跳转网页失败"
+            if request.status > 400:
+                return False, "错误码：" + str(request.status)
+            content = request.read()
+            content = content.decode("gbk")
         html_is_suc = "<title>登录成功窗</title>" in content
         if html_is_suc:
             return True, "登录成功"
@@ -118,11 +150,17 @@ class BjutNet (threading.Thread):
                 msg = "登录成功"
                 suc = True
             return suc, msg
+        else:
+            return False, "登录失败"
 
     def check(self):
         """检查北工大网关状态"""
         try:
-            request = urllib.request.urlopen("https://lgn.bjut.edu.cn")
+            if self._account['type'] == 6:
+                url = "https://lgn6.bjut.edu.cn"
+            else:
+                url = "https://lgn.bjut.edu.cn"
+            request = urllib.request.urlopen(url)
             if request is None:
                 return False, "打开页面失败"
             if request.status > 400:
@@ -142,7 +180,7 @@ class BjutNet (threading.Thread):
             html_time = re_time.group(1)
             html_flow = re_flow.group(1)
             html_fee = re_fee.group(1)
-            html_flow1 = round(int(html_flow) // 1024 / 1024 * 100) / 100# 保留两位小数
+            html_flow1 = round(int(html_flow) // 1024 / 1024 * 100) / 100  # 保留两位小数
             html_fee1 = (int(html_fee) // 100) / 100
             msg = "已使用时间" + html_time + "分钟，"
             msg += "已使用流量" + str(html_flow1) + "GB，"
@@ -158,14 +196,14 @@ class BjutNet (threading.Thread):
             if suc is True:
                 # 首次登录时输出信息
                 if not is_login:
-                    print(msg)
+                    print(time.asctime(), msg)
                 is_login = True
                 time.sleep(30)
             else:
                 is_login = False
-                print(msg)
+                print(time.asctime(), msg)
                 suc, msg = self.login()
-                print(msg)
+                print(time.asctime(), msg)
                 if suc is False:
                     time.sleep(1)
 
