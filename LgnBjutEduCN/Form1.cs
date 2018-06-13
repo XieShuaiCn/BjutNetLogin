@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Windows.Forms;
+using WebKit;
 
 namespace LgnBjutEduCN
 {
@@ -14,7 +15,7 @@ namespace LgnBjutEduCN
         private ToolStripMenuItem RefreshToolStripMenuItem;
         private ToolStripMenuItem AboutToolStripMenuItem;
         private NotifyIcon notify;
-        private WebBrowser web;
+        private WebKitBrowser web;
         
         public Form1()
         {
@@ -48,7 +49,7 @@ namespace LgnBjutEduCN
             this.RefreshToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.AboutToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.notify = new NotifyIcon();
-            this.web = new WebBrowser();
+            this.web = new WebKit.WebKitBrowser();
             this.menuStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -95,8 +96,8 @@ namespace LgnBjutEduCN
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(850, 530);
-            this.MinimumSize = new System.Drawing.Size(850, 530);
+            this.ClientSize = new System.Drawing.Size(810, 470);
+            this.MinimumSize = new System.Drawing.Size(825, 510);
             this.Controls.Add(this.menuStrip1);
             this.Controls.Add(this.web);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
@@ -152,7 +153,7 @@ namespace LgnBjutEduCN
 
         private void RefreshToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            this.web.Refresh();
+            this.web.Reload(WebBrowserRefreshOption.Completely);
         }
 
         private void AboutToolStripMenuItem_Click(object sender, EventArgs e)

@@ -10,13 +10,3 @@ F:\MyWorks\VC#2010\LgnBjutEduCN\LgnBjutEduCN\obj\x86\Release\ResGen.read.1.tlog
 F:\MyWorks\VC#2010\LgnBjutEduCN\LgnBjutEduCN\obj\x86\Release\ResGen.write.1.tlog
 F:\MyWorks\VC#2010\LgnBjutEduCN\LgnBjutEduCN\obj\x86\Release\LgnBjutEduCN.exe
 F:\MyWorks\VC#2010\LgnBjutEduCN\LgnBjutEduCN\obj\x86\Release\LgnBjutEduCN.pdb
-F:\MyWorks\Projects\项目版本归档\BjutNetLogin\LgnBjutEduCN\LgnBjutEduCN\bin\Release\LgnBjutEduCN.exe.config
-F:\MyWorks\Projects\项目版本归档\BjutNetLogin\LgnBjutEduCN\LgnBjutEduCN\obj\x86\Release\LgnBjutEduCN.exe
-F:\MyWorks\Projects\项目版本归档\BjutNetLogin\LgnBjutEduCN\LgnBjutEduCN\obj\x86\Release\LgnBjutEduCN.pdb
-F:\MyWorks\Projects\项目版本归档\BjutNetLogin\LgnBjutEduCN\LgnBjutEduCN\bin\Release\LgnBjutEduCN.exe
-F:\MyWorks\Projects\项目版本归档\BjutNetLogin\LgnBjutEduCN\LgnBjutEduCN\bin\Release\LgnBjutEduCN.pdb
-F:\MyWorks\Projects\项目版本归档\BjutNetLogin\LgnBjutEduCN\LgnBjutEduCN\obj\x86\Release\ResolveAssemblyReference.cache
-F:\MyWorks\Projects\项目版本归档\BjutNetLogin\LgnBjutEduCN\LgnBjutEduCN\obj\x86\Release\LgnBjutEduCN.Form1.resources
-F:\MyWorks\Projects\项目版本归档\BjutNetLogin\LgnBjutEduCN\LgnBjutEduCN\obj\x86\Release\LgnBjutEduCN.Properties.Resources.resources
-F:\MyWorks\Projects\项目版本归档\BjutNetLogin\LgnBjutEduCN\LgnBjutEduCN\obj\x86\Release\ResGen.read.1.tlog
-F:\MyWorks\Projects\项目版本归档\BjutNetLogin\LgnBjutEduCN\LgnBjutEduCN\obj\x86\Release\ResGen.write.1.tlog
