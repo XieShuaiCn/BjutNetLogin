@@ -261,6 +261,12 @@ void WndMain::on_btnApply_click()
     if(m_bApplyLogin)
     {
         m_net.stop_monitor();
+        QString msg;
+        m_net.logout(msg);
+        on_txtMsg_message(QDateTime::currentDateTime(), msg);
+        msg.clear();
+        m_net.login(msg);
+        on_txtMsg_message(QDateTime::currentDateTime(), msg);
         m_net.start_monitor();
     }
 }
