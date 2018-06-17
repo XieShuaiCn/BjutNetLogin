@@ -423,6 +423,13 @@ bool BjutNet::checkLoginStatus(QString& msg, LoginType type)
     return true;
 }
 
+bool BjutNet::checkNetStatus(QString &msg)
+{
+//    int id = QHostInfo::lookupHost("www.bjut.edu.cn", nullptr, nullptr);
+//    QHostInfo info(id);
+//    return QHostInfo::NoError == info.error();
+    return getUrl(QUrl("http://www.bjut.edu.cn/404.html")).size() > 0;
+}
 
 bool BjutNet::start_monitor()
 {

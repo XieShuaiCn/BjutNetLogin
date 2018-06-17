@@ -30,6 +30,8 @@ public:
     bool logoutOnWIFI(QString &msg, LoginType type = AutoLoginType);
     //检测网关状态
     bool checkLoginStatus(QString &msg, LoginType type = AutoLoginType);
+    //检测网络是否畅通
+    bool checkNetStatus(QString &msg);
     //启动监视器
     bool start_monitor();
     //停止监视器
