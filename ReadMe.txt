@@ -38,10 +38,10 @@ install可以在系统中创建启动的快捷方式，由于带有图形界面�
 消除代码unused parameter警告
 修复部分windows下，程序依赖组件不全的问题
 
-2.1.1
+2.2.0
 统一换行符为\n
 添加网络类型的判断，有线还是无线？
 修复bjut_wifi不能登录的问题
 登录函数区分有线和无线，且可以指定登录类型
-jiance denglu leixing
-denglu yanzheng zhuagntai
+检测状态时判断网络类型
+登录时再次验证状态，根据状态登录网关
