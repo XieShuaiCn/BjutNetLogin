@@ -39,6 +39,7 @@ protected slots:
     void on_close(QCloseEvent *event);
     void on_btnApply_click();
     void on_btnLogout_click();
+    void on_btnLogin_click();
     void on_actApplyLogin_triggered(bool checked = false);
     void on_actApplyOnly_triggered(bool checked = false);
     void on_txtMsg_message(const QDateTime& time, const QString& info);
@@ -60,6 +61,7 @@ private:
     QPushButton *m_btnApplyMenu;
     QPushButton *m_btnApply;
     QPushButton *m_btnLogout;
+    QPushButton *m_btnLogin;
     QTextEdit *m_txtMsg;
     QLabel *m_lblTimeUnit;
     QLabel *m_lblFlowUnit;

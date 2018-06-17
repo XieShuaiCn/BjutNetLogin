@@ -84,6 +84,11 @@ public:
     {
         return m_netType;
     }
+    //获取登录状态，true：在线；false：离线
+    bool getLogStatus()
+    {
+        return m_isOnline;
+    }
 protected:
     void run();
     //QString getUrl(QString url);
@@ -99,6 +104,7 @@ private:
     QString m_strPassword;
     LoginType m_loginType;
     NetType m_netType;
+    bool m_isOnline = false;
     int m_nTime;//分钟
     int m_nFlow;//KB
     int m_nFee;//分

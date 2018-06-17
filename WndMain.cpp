@@ -23,6 +23,7 @@ WndMain::WndMain(QWidget *parent) :
     //关联信号
     connect(m_btnApply, &QPushButton::clicked, this, &WndMain::on_btnApply_click);
     connect(m_btnLogout, &QPushButton::clicked, this, &WndMain::on_btnLogout_click);
+    connect(m_btnLogin, &QPushButton::clicked, this, &WndMain::on_btnLogin_click);
     //connect(this, &WndMain::showed, this, &WndMain::on_show);
     connect(this, &WndMain::closeEvent, this, &WndMain::on_close);
     connect(m_actMenuApplyOnly, &QAction::triggered, this, &WndMain::on_actApplyOnly_triggered);
@@ -124,6 +125,9 @@ void WndMain::initUI()
     m_btnApply = new QPushButton(this);
     m_btnApply->setGeometry(QRect(470, 100, 70, 30));
     m_btnApply->setFlat(false);
+    //上线按钮
+    m_btnLogin = new QPushButton(this);
+    m_btnLogin->setGeometry(QRect(470, 60, 85, 30));
     //下线按钮
     m_btnLogout = new QPushButton(this);
     m_btnLogout->setGeometry(QRect(470, 20, 85, 30));
@@ -154,6 +158,7 @@ void WndMain::initUI()
     m_lblType->setText(QApplication::translate("WndMain", "\347\261\273\345\236\213\357\274\232", Q_NULLPTR));
     m_btnApplyMenu->setText(QString());
     m_btnApply->setText(QApplication::translate("WndMain", "\345\272\224\347\224\250", Q_NULLPTR));
+    m_btnLogin->setText(tr("上线"));
     m_btnLogout->setText(QApplication::translate("WndMain", "\344\270\213\347\272\277", Q_NULLPTR));
     m_lblTimeUnit->setText(QApplication::translate("WndMain", "\345\210\206\351\222\237", Q_NULLPTR));
     m_lblFlowUnit->setText(QApplication::translate("WndMain", "KB", Q_NULLPTR));
@@ -266,6 +271,11 @@ void WndMain::on_btnLogout_click()
     QString msg;
     m_net.logout(msg);
     on_txtMsg_message(QDateTime::currentDateTime(), msg);
+}
+
+void WndMain::on_btnLogin_click()
+{
+    m_net.start_monitor();
 }
 
 void WndMain::on_actApplyOnly_triggered(bool checked)

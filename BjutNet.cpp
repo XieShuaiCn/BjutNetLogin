@@ -344,6 +344,7 @@ bool BjutNet::check(QString& msg, LoginType type)
         if(pos < 0)
         {
             msg.append("没有登录网关6，未检测到时间\n");
+            m_isOnline = false;
             emit status_update(false, m_nTime, m_nFlow, m_nFee);
             return false;
         }
@@ -352,6 +353,7 @@ bool BjutNet::check(QString& msg, LoginType type)
         if(pos < 0)
         {
             msg.append("没有登录网关4，未检测到时间\n");
+            m_isOnline = false;
             emit status_update(false, m_nTime, m_nFlow, m_nFee);
             return false;
         }
@@ -359,6 +361,7 @@ bool BjutNet::check(QString& msg, LoginType type)
         if(pos < 0)
         {
             msg.append("没有登录网关4，未检测到流量\n");
+            m_isOnline = false;
             emit status_update(false, m_nTime, m_nFlow, m_nFee);
             return false;
         }
@@ -366,6 +369,7 @@ bool BjutNet::check(QString& msg, LoginType type)
         if(pos < 0)
         {
             msg.append("没有登录网关4，未检测到费用\n");
+            m_isOnline = false;
             emit status_update(false, m_nTime, m_nFlow, m_nFee);
             return false;
         }
@@ -373,14 +377,17 @@ bool BjutNet::check(QString& msg, LoginType type)
     else
     {
         QString content = getUrl(IPv4 == type ? url4 : url6);
-        QString errmsg("没有登录网关\1，未检测到\2\n");
+        QString errmsg(tr("没有登录网关\1，未检测到\2\n"));
 #ifdef QT_DEBUG
         qDebug() << content << "\n";
 #endif
         int pos = content.indexOf(regTime);
         if(pos < 0)
         {
+            qDebug() << errmsg.arg(IPv4 == type ? 4 : 6);
+            qDebug() << errmsg.arg(IPv4 == type ? 4 : 6).arg("时间");
             msg.append(errmsg.arg(IPv4 == type ? 4 : 6).arg("时间"));
+            m_isOnline = false;
             emit status_update(false, m_nTime, m_nFlow, m_nFee);
             return false;
         }
@@ -388,6 +395,7 @@ bool BjutNet::check(QString& msg, LoginType type)
         if(pos < 0)
         {
             msg.append(errmsg.arg(IPv4 == type ? 4 : 6).arg("流量"));
+            m_isOnline = false;
             emit status_update(false, m_nTime, m_nFlow, m_nFee);
             return false;
         }
@@ -395,6 +403,7 @@ bool BjutNet::check(QString& msg, LoginType type)
         if(pos < 0)
         {
             msg.append(errmsg.arg(IPv4 == type ? 4 : 6).arg("费用"));
+            m_isOnline = false;
             emit status_update(false, m_nTime, m_nFlow, m_nFee);
             return false;
         }
@@ -407,6 +416,7 @@ bool BjutNet::check(QString& msg, LoginType type)
     m_nFee = html_fee.toInt() / 100;
     msg.sprintf("已用时间：%.3f小时，已用流量：%.3fMB，剩余金额：%.2f元\n",
                 float(m_nTime) / 60, float(m_nFlow) / 1024, float(m_nFee) / 100);
+    m_isOnline = true;
     emit status_update(true, m_nTime, m_nFlow, m_nFee);
 
     return true;
