@@ -4,8 +4,7 @@
 #include "common.h"
 #include <QThread>
 #include <QTime>
-#include <QtNetwork/QNetworkReply>
-
+#include <QtNetwork/QNetworkConfigurationManager>
 
 class BjutNet : public QThread
 {
@@ -22,15 +21,15 @@ public:
     //构造函数
     explicit BjutNet();
     //登录网关
-    bool login(QString& msg);
-    bool loginOnLAN(QString& msg, LoginType type = AutoLoginType);
-    bool loginOnWIFI(QString& msg, LoginType type = AutoLoginType);
+    bool login(QString &msg);
+    bool loginOnLAN(QString &msg, LoginType type = AutoLoginType);
+    bool loginOnWIFI(QString &msg, LoginType type = AutoLoginType);
     //注销网关
-    bool logout(QString& msg);
-    bool logoutOnLAN(QString& msg, LoginType type = AutoLoginType);
-    bool logoutOnWIFI(QString& msg, LoginType type = AutoLoginType);
+    bool logout(QString &msg);
+    bool logoutOnLAN(QString &msg, LoginType type = AutoLoginType);
+    bool logoutOnWIFI(QString &msg, LoginType type = AutoLoginType);
     //检测网关状态
-    bool check(QString& msg, LoginType type = AutoLoginType);
+    bool checkLoginStatus(QString &msg, LoginType type = AutoLoginType);
     //启动监视器
     bool start_monitor();
     //停止监视器
@@ -85,7 +84,7 @@ public:
         return m_netType;
     }
     //获取登录状态，true：在线；false：离线
-    bool getLogStatus()
+    bool getLoginStatus()
     {
         return m_isOnline;
     }
@@ -104,6 +103,7 @@ private:
     QString m_strPassword;
     LoginType m_loginType;
     NetType m_netType;
+    QNetworkConfigurationManager m_netMan;
     bool m_isOnline = false;
     int m_nTime;//分钟
     int m_nFlow;//KB
@@ -114,6 +114,7 @@ signals:
     //更新状态（是否登录，已用时间（分钟），已用流量（千字节），剩余金额（分））
     void status_update(bool login, int time, int flow, int fee);
 private slots:
+    void online_status_change(bool online);
 };
 
 #endif // BJUTNET_H

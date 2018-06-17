@@ -207,8 +207,6 @@ void WndMain:: on_show()
     m_cmbType->setCurrentIndex(int(m_net.getLoginType())-1);
     //更新页面显示的流量状态
     on_account_status(m_net.getTime() > 0, m_net.getTime(), m_net.getFlow(), m_net.getFee());
-    //QString msg;
-    //m_net.check(msg);
 }
 
 void WndMain::on_account_status(bool login, int time, int flow, int fee)

@@ -10,6 +10,7 @@
 #include <QtNetwork/QNetworkRequest>
 #include <QtNetwork/QSslConfiguration>
 #include <QtNetwork/QNetworkReply>
+#include <QtNetwork/QHostInfo>
 
 
 BjutNet::BjutNet() :
@@ -73,7 +74,7 @@ bool BjutNet::loginOnLAN(QString &msg, LoginType type)
     case IPv4:
         v46s = 1;
         url = "https://lgn.bjut.edu.cn";
-        if(check(msg, IPv4))
+        if(checkLoginStatus(msg, IPv4))
         {
             return true;
         }
@@ -81,7 +82,7 @@ bool BjutNet::loginOnLAN(QString &msg, LoginType type)
     case IPv6:
         v46s = 2;
         url = "https://lgn6.bjut.edu.cn";
-        if(check(msg, IPv6))
+        if(checkLoginStatus(msg, IPv6))
         {
             return true;
         }
@@ -89,8 +90,8 @@ bool BjutNet::loginOnLAN(QString &msg, LoginType type)
     case IPv4_6:
         v46s = 0;
         url = "https://lgn6.bjut.edu.cn/V6?https://lgn.bjut.edu.cn";
-        ipv4_login = check(msg, IPv4);
-        ipv6_login = check(msg, IPv6);
+        ipv4_login = checkLoginStatus(msg, IPv4);
+        ipv6_login = checkLoginStatus(msg, IPv6);
         if(!ipv4_login && ipv6_login)
         {
             return loginOnLAN(msg, IPv4);
@@ -320,7 +321,7 @@ bool BjutNet::logoutOnWIFI(QString &msg, LoginType type)
     return ipv6_succ && msgID == 14;
 }
 
-bool BjutNet::check(QString& msg, LoginType type)
+bool BjutNet::checkLoginStatus(QString& msg, LoginType type)
 {
     msg.clear();
     QUrl url6("https://lgn6.bjut.edu.cn/");
@@ -422,18 +423,24 @@ bool BjutNet::check(QString& msg, LoginType type)
     return true;
 }
 
+
 bool BjutNet::start_monitor()
 {
     if(!this->isRunning())
-        //启动线程
+    {    //启动线程
         this->start(IdlePriority);
+        connect(&m_netMan, &QNetworkConfigurationManager::onlineStateChanged, this, &BjutNet::online_status_change);
+    }
     return true;
 }
 
 bool BjutNet::stop_monitor()
 {
     if(this->isRunning())
+    {
         this->terminate();
+        disconnect(&m_netMan, &QNetworkConfigurationManager::onlineStateChanged, this, &BjutNet::online_status_change);
+    }
     return true;
 }
 
@@ -736,6 +743,22 @@ QString BjutNet::convertMsg(int msg, QString msga)
     return str;
 }
 
+void BjutNet::online_status_change(bool online)
+{
+    if(online)
+    {
+        QString msg;
+        bool ret = this->checkLoginStatus(msg);
+        emit message(QDateTime::currentDateTime(), msg);
+        if(!ret)
+        {
+            msg.clear();
+            this->login(msg);
+            emit message(QDateTime::currentDateTime(), msg);
+        }
+    }
+}
+
 void BjutNet::run()
 {
     bool is_login = false;
@@ -746,7 +769,7 @@ void BjutNet::run()
     while(true)
     {
         msg.clear();
-        suc = this->check(msg);
+        suc = this->checkLoginStatus(msg);
         time = QDateTime::currentDateTime();
         if (suc)
         {
@@ -758,7 +781,15 @@ void BjutNet::run()
             is_login = true;
             this->sleep(30);
         }
-        else
+        else if(UnknownNet == m_netType)//非校园网
+        {
+            this->sleep(sleepsec);
+            if(sleepsec < 1024)//最大17分钟试一次
+            {
+                sleepsec *= 2;
+            }
+        }
+        else//校园网未登录
         {
             //登录
             is_login = false;
