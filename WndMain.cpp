@@ -258,14 +258,26 @@ void WndMain::on_btnApply_click()
     }
     if(m_bApplyLogin)
     {
-        m_net.stop_monitor();
+        if(!m_net.stop_monitor())
+        {
+            on_txtMsg_message(QDateTime::currentDateTime(), "在线保持停止失败");
+        }
         QString msg;
-        m_net.logout(msg);
+        if(m_net.logout(msg))
+        {
+            on_txtMsg_message(QDateTime::currentDateTime(), "账号下线失败");
+        }
         on_txtMsg_message(QDateTime::currentDateTime(), msg);
         msg.clear();
-        m_net.login(msg);
+        if(m_net.login(msg))
+        {
+            on_txtMsg_message(QDateTime::currentDateTime(), "账号上线失败");
+        }
         on_txtMsg_message(QDateTime::currentDateTime(), msg);
-        m_net.start_monitor();
+        if(!m_net.start_monitor())
+        {
+            on_txtMsg_message(QDateTime::currentDateTime(), "在线保持启动失败");
+        }
     }
 }
 
