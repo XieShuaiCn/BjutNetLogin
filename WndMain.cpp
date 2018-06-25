@@ -251,7 +251,7 @@ void WndMain::on_btnApply_click()
 {
     m_net.setAccount(m_editAccount->text());
     m_net.setPassword(m_editPassword->text());
-    m_net.setLoginType(m_cmbType->currentIndex());
+    m_net.setLoginType(m_cmbType->currentIndex() + 1);
     if(m_net.save_account())
     {
         on_txtMsg_message(QDateTime::currentDateTime(), "账号信息保存成功");
