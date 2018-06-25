@@ -44,13 +44,13 @@ bool BjutNet::login(QString& msg)
         }
         else
         {
-            m_netType = WIFI;
+            m_netType = BJUT_WIFI;
             return loginOnWIFI(msg);
         }
     }
     else
     {
-        m_netType = LAN;
+        m_netType = BJUT_LAN;
         return loginOnLAN(msg);
     }
     msg.append("Program should not reach here.");
@@ -207,7 +207,7 @@ bool BjutNet::loginOnWIFI(QString &msg, LoginType type)
 
 bool BjutNet::logout(QString &msg)
 {
-    return WIFI == m_netType ? logoutOnWIFI(msg) : logoutOnLAN(msg);
+    return BJUT_WIFI == m_netType ? logoutOnWIFI(msg) : logoutOnLAN(msg);
 }
 
 bool BjutNet::logoutOnLAN(QString &msg, LoginType type)
@@ -324,8 +324,9 @@ bool BjutNet::logoutOnWIFI(QString &msg, LoginType type)
 bool BjutNet::checkLoginStatus(QString& msg, LoginType type)
 {
     msg.clear();
-    QUrl url6("https://lgn6.bjut.edu.cn/");
-    QUrl url4("https://lgn.bjut.edu.cn/");
+    QUrl url6("http://lgn6.bjut.edu.cn/");
+    QUrl url4("http://lgn.bjut.edu.cn/");
+    QUrl url4_wifi("http://wlgn.bjut.edu.cn/1.html");
 
     //解析数据
     QRegExp regTime("time='(\\d+) *';", Qt::CaseInsensitive);
@@ -340,7 +341,16 @@ bool BjutNet::checkLoginStatus(QString& msg, LoginType type)
     //分析网页
     if(type == IPv4_6)
     {
-        QString content = getUrl(url6);
+        QString content;
+        if(200 == getUrl(url6, content))
+        {
+            m_netType = BJUT_LAN;
+        }
+        else
+        {
+            m_netType = UnknownNet;
+            return false;
+        }
         int pos = content.indexOf(regTime);
         if(pos < 0)
         {
@@ -349,7 +359,15 @@ bool BjutNet::checkLoginStatus(QString& msg, LoginType type)
             emit status_update(false, m_nTime, m_nFlow, m_nFee);
             return false;
         }
-        content = getUrl(url4);
+        if(200 == getUrl(url4, content))
+        {
+            m_netType = BJUT_LAN;
+        }
+        else
+        {
+            m_netType = UnknownNet;
+            return false;
+        }
         pos = content.indexOf(regTime);
         if(pos < 0)
         {
@@ -377,16 +395,27 @@ bool BjutNet::checkLoginStatus(QString& msg, LoginType type)
     }
     else
     {
-        QString content = getUrl(IPv4 == type ? url4 : url6);
-        QString errmsg(tr("没有登录网关\1，未检测到\2\n"));
+        QString content;
+        if(200 == getUrl(url4, content))
+        {
+            m_netType = BJUT_LAN;
+        }
+        else
+        {
+            m_netType = UnknownNet;
+            return false;
+        }
+        if(IPv6 == type)
+        {
+            content = getUrl(url6);
+        }
+        QString errmsg(tr("没有登录网关%1，未检测到%2\n"));
 #ifdef QT_DEBUG
         qDebug() << content << "\n";
 #endif
         int pos = content.indexOf(regTime);
         if(pos < 0)
         {
-            qDebug() << errmsg.arg(IPv4 == type ? 4 : 6);
-            qDebug() << errmsg.arg(IPv4 == type ? 4 : 6).arg("时间");
             msg.append(errmsg.arg(IPv4 == type ? 4 : 6).arg("时间"));
             m_isOnline = false;
             emit status_update(false, m_nTime, m_nFlow, m_nFee);
@@ -425,6 +454,7 @@ bool BjutNet::checkLoginStatus(QString& msg, LoginType type)
 
 bool BjutNet::checkNetStatus(QString &msg)
 {
+    UNUSED(msg);
 //    int id = QHostInfo::lookupHost("www.bjut.edu.cn", nullptr, nullptr);
 //    QHostInfo info(id);
 //    return QHostInfo::NoError == info.error();
@@ -569,7 +599,7 @@ bool BjutNet::save_account(const QString path)
         QJsonObject jo;
         jo.insert("account", m_strAccount);
         jo.insert("password", m_strPassword);
-        jo.insert("type", int(m_loginType));
+        jo.insert("type", int(m_loginType) - 1);
         QJsonDocument jd;
         jd.setObject(jo);
         QByteArray data= jd.toJson(QJsonDocument::Compact);
@@ -580,8 +610,14 @@ bool BjutNet::save_account(const QString path)
     return false;
 }
 
-
 QString BjutNet::getUrl(QUrl url)
+{
+    QString content;
+    getUrl(url, content);
+    return content;
+}
+
+int BjutNet::getUrl(QUrl url, QString &content)
 {
     //建立http连接
     QNetworkAccessManager* pManager = new QNetworkAccessManager(this);
@@ -605,7 +641,7 @@ QString BjutNet::getUrl(QUrl url)
     if(pReply->error() != QNetworkReply::NoError)//error
     {
         message(QDateTime::currentDateTime(), QString("Get url error:%1").arg(pReply->errorString()));
-        return QString();
+        return 0;
     }
     //读取
     QByteArray data = pReply->readAll();
@@ -613,14 +649,27 @@ QString BjutNet::getUrl(QUrl url)
     if(data.size() == 0)
         qDebug() << "getUrl Error: " << pReply->errorString();
 #endif
-    delete pManager;
     //数据转码
     QTextCodec *codec = QTextCodec::codecForHtml(data);
-    QString content = codec->toUnicode(data);
-    return content;
+    content.clear();
+    content.append(codec->toUnicode(data));
+
+    int status = pReply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
+    //QList<QByteArray> ls = pReply->rawHeaderList();
+    //int status = pReply->rawHeader("").toInt();
+
+    delete pManager;
+    return status;
 }
 
 QString BjutNet::postUrl(QUrl url, QMap<QString, QString> data)
+{
+    QString content;
+    postUrl(url, data, content);
+    return content;
+}
+
+int BjutNet::postUrl(QUrl url, QMap<QString, QString> data, QString &content)
 {
     QString arg;
     auto end = data.cend();
@@ -635,10 +684,17 @@ QString BjutNet::postUrl(QUrl url, QMap<QString, QString> data)
     {
         arg.remove(arg.size()-1, 1);
     }
-    return postUrl(url, arg);
+    return postUrl(url, arg, content);
 }
 
 QString BjutNet::postUrl(QUrl url, QString arg)
+{
+    QString content;
+    postUrl(url, arg, content);
+    return content;
+}
+
+int BjutNet::postUrl(QUrl url, QString arg, QString &content)
 {
     QByteArray postArray;
     postArray.append(arg);
@@ -670,7 +726,7 @@ QString BjutNet::postUrl(QUrl url, QString arg)
     if(pReply->error() != QNetworkReply::NoError)//error
     {
         message(QDateTime::currentDateTime(), QString("Post url error:%1").arg(pReply->errorString()));
-        return QString();
+        return 0;
     }
     //读取
     QByteArray data = pReply->readAll();
@@ -678,11 +734,14 @@ QString BjutNet::postUrl(QUrl url, QString arg)
     if(data.size() == 0)
         qDebug() << "getUrl Error: " << pReply->errorString();
 #endif
-    delete pManager;
     //数据转码
     QTextCodec *codec = QTextCodec::codecForHtml(data);
-    QString content = codec->toUnicode(data);
-    return content;
+    content.clear();
+    content.append(codec->toUnicode(data));
+    int status = pReply->rawHeader("status").toInt();
+
+    delete pManager;
+    return status;
 }
 
 QString BjutNet::convertMsg(int msg, QString msga)

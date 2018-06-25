@@ -16,7 +16,7 @@ public:
         AutoLoginType = 0, IPv4 = 1, IPv6 = 2, IPv4_6 = 3
     };
     enum NetType{
-        UnknownNet = 0, LAN = 1, WIFI = 2
+        UnknownNet = 0, BJUT_LAN = 1, BJUT_WIFI = 2, FREE_NET = 3
     };
     //构造函数
     explicit BjutNet();
@@ -92,12 +92,13 @@ public:
     }
 protected:
     void run();
-    //QString getUrl(QString url);
     QString getUrl(QUrl url);
-    //QString postUrl(QString url, QMap<QString, QString> data);
+    int getUrl(QUrl url, QString &content);
     QString postUrl(QUrl url, QMap<QString, QString> data);
-    //QString postUrl(QString url, QString data);
+    int postUrl(QUrl url, QMap<QString, QString> data, QString &content);
     QString postUrl(QUrl url, QString arg);
+    int postUrl(QUrl url, QString arg, QString &content);
+
     QString convertMsg(int msg, QString msga = "");
 private:
     //账号信息
