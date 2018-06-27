@@ -25,7 +25,8 @@ DEFINES += QT_DEPRECATED_WARNINGS
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 
-RC_ICONS = logo.ico
+RC_FILE += version.rc
+#RC_ICONS = logo.ico
 
 # Use Precompiled headers (PCH)
 PRECOMPILED_HEADER  = common.h
@@ -47,7 +48,8 @@ HEADERS += \
 DISTFILES += \
     C:/Users/XIESHUAI/.bjutnet/account.json \
     /home/xieshuai/.bjutnet/account.json \
-    ReadMe.txt
+    ReadMe.txt \
+    version.rc
 
 RESOURCES += \
     all.qrc
