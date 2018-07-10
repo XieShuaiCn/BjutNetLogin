@@ -33,7 +33,7 @@ public:
 Q_SIGNALS:
     void showed();
     void closeEvent(QCloseEvent *event);
-protected slots:
+public slots:
     void initUI();
     void on_show();
     void on_close(QCloseEvent *event);

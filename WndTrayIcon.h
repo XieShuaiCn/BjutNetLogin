@@ -32,6 +32,8 @@ protected slots:
     QApplication *m_app;
     QMenu *m_menuTray;
     QAction *m_actMenuShowMain;
+    QAction *m_actMenuLogout;
+    QAction *m_actMenuLogin;
     QAction *m_actMenuQuit;
 };
 

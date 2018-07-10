@@ -291,6 +291,7 @@ void WndMain::on_btnLogout_click()
 
 void WndMain::on_btnLogin_click()
 {
+    m_net.stop_monitor();
     m_net.start_monitor();
 }
 

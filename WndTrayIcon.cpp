@@ -14,8 +14,13 @@ WndTrayIcon::WndTrayIcon(QApplication *app,WndMain *parent):
 
     m_menuTray = new QMenu();
     m_actMenuShowMain = new QAction("显示主窗口");
+    m_actMenuLogin = new QAction("上线");
+    m_actMenuLogout = new QAction("下线");
     m_actMenuQuit = new QAction("退出");
     m_menuTray->addAction(m_actMenuShowMain);
+    m_menuTray->addSeparator();
+    m_menuTray->addAction(m_actMenuLogin);
+    m_menuTray->addAction(m_actMenuLogout);
     m_menuTray->addSeparator();
     m_menuTray->addAction(m_actMenuQuit);
     this->setContextMenu(m_menuTray);
@@ -27,6 +32,8 @@ WndTrayIcon::WndTrayIcon(QApplication *app,WndMain *parent):
 
     connect(this, &WndTrayIcon::activated, this, &WndTrayIcon::on_actived);
     connect(m_actMenuShowMain, &QAction::triggered, this, &WndTrayIcon::on_actMenuShowMain_trigger);
+    connect(m_actMenuLogin, &QAction::triggered, m_wndMain, &WndMain::on_btnLogin_click);
+    connect(m_actMenuLogout, &QAction::triggered, m_wndMain, &WndMain::on_btnLogout_click);
     connect(m_actMenuQuit, &QAction::triggered, this, &WndTrayIcon::on_actMenuQuit_trigger);
     connect(&m_tmClick, &QTimer::timeout, this, &WndTrayIcon::on_clicked);
 }
