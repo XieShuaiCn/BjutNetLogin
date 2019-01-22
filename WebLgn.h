@@ -2,11 +2,12 @@
 #define BJUTNET_H
 
 #include "common.h"
+#include "HttpClient.h"
 #include <QThread>
 #include <QTime>
-#include <QtNetwork/QNetworkConfigurationManager>
+#include <QNetworkConfigurationManager>
 
-class BjutNet : public QThread
+class WebLgn : public QThread
 {
     Q_OBJECT
 
@@ -19,7 +20,7 @@ public:
         UnknownNet = 0, BJUT_LAN = 1, BJUT_WIFI = 2, FREE_NET = 3
     };
     //构造函数
-    explicit BjutNet();
+    explicit WebLgn();
     //登录网关
     bool login(QString &msg);
     bool loginOnLAN(QString &msg, LoginType type = AutoLoginType);
@@ -92,21 +93,16 @@ public:
     }
 protected:
     void run();
-    QString getUrl(QUrl url);
-    int getUrl(QUrl url, QString &content);
-    QString postUrl(QUrl url, QMap<QString, QString> data);
-    int postUrl(QUrl url, QMap<QString, QString> data, QString &content);
-    QString postUrl(QUrl url, QString arg);
-    int postUrl(QUrl url, QString arg, QString &content);
 
     QString convertMsg(int msg, QString msga = "");
 private:
+    QNetworkConfigurationManager m_netCfgMan;
     //账号信息
     QString m_strAccount;
     QString m_strPassword;
     LoginType m_loginType;
     NetType m_netType;
-    QNetworkConfigurationManager m_netMan;
+    HttpClient m_http;
     bool m_isOnline = false;
     int m_nTime;//分钟
     int m_nFlow;//KB
