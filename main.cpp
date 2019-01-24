@@ -3,20 +3,26 @@
 #include "WndTrayIcon.h"
 #include <QApplication>
 #include <QtSingleApplication>
+#include <QDir>
 
 int main(int argc, char *argv[])
 {
-    QtSingleApplication a("APP_UUID_BjutNetLogin2", argc, argv);
+    QtSingleApplication app("APP_UUID_BjutNetLogin3", argc, argv);
+#ifdef QT_DEBUG
+    qDebug() << QtSingleApplication::applicationDirPath() << "\n"
+             << QDir::currentPath() << "\n";
+#endif
 
-    if(a.isRunning())
+    if(app.isRunning())
     {
-        a.sendMessage("ShowMainWnd");
+        app.sendMessage("ShowMainWnd");
         return 0;
     }
+    QDir::setCurrent(app.applicationDirPath());
     WndMain w;
-    WndTrayIcon wti(&a, &w);
+    WndTrayIcon wti(&app, &w);
 
-    QObject::connect(&a, &QtSingleApplication::messageReceived, &wti, &WndTrayIcon::reciveMessage);
+    QObject::connect(&app, &QtSingleApplication::messageReceived, &wti, &WndTrayIcon::reciveMessage);
 
     wti.show();
 
@@ -29,5 +35,5 @@ int main(int argc, char *argv[])
         w.show();
     }
 
-    return a.exec();
+    return app.exec();
 }

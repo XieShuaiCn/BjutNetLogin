@@ -1,8 +1,9 @@
-#ifndef BJUTNET_H
-#define BJUTNET_H
+#ifndef WEBLGN_H
+#define WEBLGN_H
 
 #include "common.h"
 #include "HttpClient.h"
+#include <atomic>
 #include <QThread>
 #include <QTime>
 #include <QNetworkConfigurationManager>
@@ -20,7 +21,7 @@ public:
         UnknownNet = 0, BJUT_LAN = 1, BJUT_WIFI = 2, FREE_NET = 3
     };
     //构造函数
-    explicit WebLgn();
+    WebLgn();
     //登录网关
     bool login(QString &msg);
     bool loginOnLAN(QString &msg, LoginType type = AutoLoginType);
@@ -37,57 +38,53 @@ public:
     bool start_monitor();
     //停止监视器
     bool stop_monitor();
-    //加载账号信息
-    bool load_account(const QString path = "");
-    //保存账号信息
-    bool save_account(const QString path = "");
-    int getTime()
+    int getTime() const
     {
         return m_nTime;
     }
-    int getFlow()
+    int getFlow() const
     {
         return m_nFlow;
     }
-    int getFee()
+    int getFee() const
     {
         return m_nFee;
     }
-    QString getAccount()
+    QString getAccount() const
     {
         return m_strAccount;
     }
-    void setAccount(QString account)
+    void setAccount(const QString &account)
     {
         m_strAccount = account;
     }
-    QString getPassword()
+    QString getPassword() const
     {
         return m_strPassword;
     }
-    void setPassword(QString password)
+    void setPassword(const QString &password)
     {
         m_strPassword = password;
     }
-    LoginType getLoginType()
+    LoginType getLoginType() const
     {
         return m_loginType;
     }
-    void setLoginType(LoginType type)
+    void setLoginType(const LoginType type)
     {
         m_loginType = type;
     }
-    void setLoginType(int type)
+    void setLoginType(const int type)
     {
         if(type > 0 && type <= 3)
             m_loginType = LoginType(type);
     }
-    NetType getNetType()
+    NetType getNetType() const
     {
         return m_netType;
     }
     //获取登录状态，true：在线；false：离线
-    bool getLoginStatus()
+    bool getLoginStatus() const
     {
         return m_isOnline;
     }
@@ -97,6 +94,7 @@ protected:
     QString convertMsg(int msg, QString msga = "");
 private:
     QNetworkConfigurationManager m_netCfgMan;
+    std::atomic_bool m_bRun;
     //账号信息
     QString m_strAccount;
     QString m_strPassword;

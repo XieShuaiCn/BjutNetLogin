@@ -9,8 +9,12 @@ class HNetworkCookieJar : public QNetworkCookieJar
 {
 public:
     HNetworkCookieJar() = default;
-    QList<QNetworkCookie> getCookies();
-    QByteArray getCookieBytes();
+    // TODO::析构有问题
+    ~HNetworkCookieJar();
+    QList<QNetworkCookie> getCookies() const;
+    QList<QNetworkCookie> getCookies(const QUrl &url) const;
+    QByteArray getCookieBytes() const;
+    QByteArray getCookieBytes(const QUrl &url) const;
 };
 
 #endif // HNETWORKCOOKIEJAR_H

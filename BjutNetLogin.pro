@@ -33,23 +33,37 @@ PRECOMPILED_HEADER  = common.h
 
 
 SOURCES += \
-    main.cpp \
     common.cpp \
-    BjutNet.cpp \
+    main.cpp \
     WndMain.cpp \
-    WndTrayIcon.cpp
+    WndTrayIcon.cpp \
+    Updater.cpp \
+    HLabel.cpp \
+    HttpClient.cpp \
+    HNetworkCookieJar.cpp \
+    WebLgn.cpp \
+    WebJfself.cpp \
+    BjutNet.cpp \
+
 
 HEADERS += \
     common.h \
-    BjutNet.h \
     WndMain.h \
-    WndTrayIcon.h
+    WndTrayIcon.h \
+    Updater.h \
+    HLabel.h \
+    HttpClient.h \
+    HNetworkCookieJar.h \
+    WebLgn.h \
+    BjutNet.h \
+    WebJfself.h
 
 DISTFILES += \
     C:/Users/XIESHUAI/.bjutnet/account.json \
     /home/xieshuai/.bjutnet/account.json \
     ReadMe.txt \
-    version.rc
+    version.rc \
+    config.db
 
 RESOURCES += \
     all.qrc

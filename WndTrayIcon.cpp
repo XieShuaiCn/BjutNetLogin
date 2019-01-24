@@ -32,8 +32,8 @@ WndTrayIcon::WndTrayIcon(QApplication *app,WndMain *parent):
 
     connect(this, &WndTrayIcon::activated, this, &WndTrayIcon::on_actived);
     connect(m_actMenuShowMain, &QAction::triggered, this, &WndTrayIcon::on_actMenuShowMain_trigger);
-    connect(m_actMenuLogin, &QAction::triggered, m_wndMain, &WndMain::on_btnLogin_click);
-    connect(m_actMenuLogout, &QAction::triggered, m_wndMain, &WndMain::on_btnLogout_click);
+    connect(m_actMenuLogin, &QAction::triggered, m_wndMain, &WndMain::on_btnLogin_clicked);
+    connect(m_actMenuLogout, &QAction::triggered, m_wndMain, &WndMain::on_btnLogout_clicked);
     connect(m_actMenuQuit, &QAction::triggered, this, &WndTrayIcon::on_actMenuQuit_trigger);
     connect(&m_tmClick, &QTimer::timeout, this, &WndTrayIcon::on_clicked);
 }

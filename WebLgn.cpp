@@ -1,4 +1,4 @@
-#include "BjutNet.h"
+#include "WebLgn.h"
 #include <QFile>
 #include <QDir>
 #include <QRegExp>
@@ -6,14 +6,13 @@
 #include <QTextCodec>
 #include <QEventLoop>
 #include <QJsonDocument>
-#include <QRegExp>
 #include <QtNetwork/QNetworkRequest>
 #include <QtNetwork/QSslConfiguration>
 #include <QtNetwork/QNetworkReply>
 #include <QtNetwork/QHostInfo>
 
 
-BjutNet::BjutNet() :
+WebLgn::WebLgn() :
     QThread(),
     m_loginType(IPv4),
     m_netType(UnknownNet),
@@ -21,10 +20,12 @@ BjutNet::BjutNet() :
     m_nFlow(0.0f),
     m_nFee(0.0f)
 {
+    m_bRun = false;
+    m_http.setCodec("GBK");
 }
 
 
-bool BjutNet::login(QString& msg)
+bool WebLgn::login(QString& msg)
 {
     if(m_strAccount.length() == 0)
     {
@@ -32,10 +33,10 @@ bool BjutNet::login(QString& msg)
         return false;
     }
 
-    QString test =  getUrl(QUrl("http://lgn.bjut.edu.cn"));
+    QString test =  m_http.getUrlHtml(QUrl("http://lgn.bjut.edu.cn"));
     if(test.size() == 0)
     {
-        test =  getUrl(QUrl("http://wlgn.bjut.edu.cn/0.htm"));
+        test =  m_http.getUrlHtml(QUrl("http://wlgn.bjut.edu.cn/0.htm"));
         if (test.size() == 0)
         {
             m_netType = UnknownNet;
@@ -57,7 +58,7 @@ bool BjutNet::login(QString& msg)
     return false;
 }
 
-bool BjutNet::loginOnLAN(QString &msg, LoginType type)
+bool WebLgn::loginOnLAN(QString &msg, LoginType type)
 {
     QString url;
     int v46s = 0;
@@ -114,7 +115,7 @@ bool BjutNet::loginOnLAN(QString &msg, LoginType type)
     data.insert("v6ip", "");
     data.insert("f4serip", "172.30.201.10");
     data.insert("0MKKey", "");
-    QString content = postUrl(QUrl(url), data);
+    QString content = m_http.postUrlHtml(QUrl(url), data);
     //若返回跳转网页，继续解析跳转网页
     QRegExp regKeyValue("name='?(\\w*)'? value='([:\\w]*)'",  Qt::CaseInsensitive);
     int pos = 0;
@@ -128,7 +129,7 @@ bool BjutNet::loginOnLAN(QString &msg, LoginType type)
             ++pos;
             pos = content.indexOf(regKeyValue, pos);
         }while (pos >= 0);
-        content = postUrl(QUrl(url), data);
+        content = m_http.postUrlHtml(QUrl(url), data);
     }
     if(content.contains("<title>登录成功窗</title>"))
     {
@@ -161,7 +162,7 @@ bool BjutNet::loginOnLAN(QString &msg, LoginType type)
     return false;
 }
 
-bool BjutNet::loginOnWIFI(QString &msg, LoginType type)
+bool WebLgn::loginOnWIFI(QString &msg, LoginType type)
 {
     QString url;
     bool ipv6_succ = true;
@@ -192,8 +193,8 @@ bool BjutNet::loginOnWIFI(QString &msg, LoginType type)
     data.insert("DDDDD", m_strAccount);
     data.insert("upass", m_strPassword);
     data.insert("6MKKey", "1");
-    QString content = postUrl(QUrl(url), data);
-    content = getUrl(QUrl("https://wlgn.bjut.edu.cn/1.htm"));
+    QString content = m_http.postUrlHtml(QUrl(url), data);
+    content = m_http.getUrlHtml(QUrl("https://wlgn.bjut.edu.cn/1.htm"));
     if(content.size() > 0)
     {
         if(content.indexOf("You have successfully logged in"))
@@ -205,12 +206,12 @@ bool BjutNet::loginOnWIFI(QString &msg, LoginType type)
     return false;
 }
 
-bool BjutNet::logout(QString &msg)
+bool WebLgn::logout(QString &msg)
 {
     return BJUT_WIFI == m_netType ? logoutOnWIFI(msg) : logoutOnLAN(msg);
 }
 
-bool BjutNet::logoutOnLAN(QString &msg, LoginType type)
+bool WebLgn::logoutOnLAN(QString &msg, LoginType type)
 {
     if(type == AutoLoginType)
     {
@@ -219,7 +220,7 @@ bool BjutNet::logoutOnLAN(QString &msg, LoginType type)
 
     QUrl url6("http://lgn6.bjut.edu.cn/F.htm");
     QUrl url4("http://lgn.bjut.edu.cn/F.htm");
-    QString content = getUrl(IPv6 == type ? url6 : url4);
+    QString content = m_http.getUrlHtml(IPv6 == type ? url6 : url4);
     QRegExp regMsg("Msg=(\\d+);", Qt::CaseInsensitive);
     QRegExp regTime("time='(\\d+) *';", Qt::CaseInsensitive);
     QRegExp regFlow("flow='(\\d+) *';", Qt::CaseInsensitive);
@@ -261,7 +262,7 @@ bool BjutNet::logoutOnLAN(QString &msg, LoginType type)
     return msgID == 14;
 }
 
-bool BjutNet::logoutOnWIFI(QString &msg, LoginType type)
+bool WebLgn::logoutOnWIFI(QString &msg, LoginType type)
 {
     bool ipv6_succ = true;
     if(type == AutoLoginType)
@@ -279,7 +280,7 @@ bool BjutNet::logoutOnWIFI(QString &msg, LoginType type)
     }
 
     QUrl url4("http://Wlgn.bjut.edu.cn/F.htm");
-    QString content = getUrl(url4);
+    QString content = m_http.getUrlHtml(url4);
     QRegExp regMsg("Msg=(\\d+);", Qt::CaseInsensitive);
     QRegExp regTime("time='(\\d+) *';", Qt::CaseInsensitive);
     QRegExp regFlow("flow='(\\d+) *';", Qt::CaseInsensitive);
@@ -321,7 +322,7 @@ bool BjutNet::logoutOnWIFI(QString &msg, LoginType type)
     return ipv6_succ && msgID == 14;
 }
 
-bool BjutNet::checkLoginStatus(QString& msg, LoginType type)
+bool WebLgn::checkLoginStatus(QString& msg, LoginType type)
 {
     msg.clear();
     QUrl url6("http://lgn6.bjut.edu.cn/");
@@ -342,7 +343,7 @@ bool BjutNet::checkLoginStatus(QString& msg, LoginType type)
     if(type == IPv4_6)
     {
         QString content;
-        if(200 == getUrl(url6, content))
+        if(200 == m_http.getUrlHtml(url6, content))
         {
             m_netType = BJUT_LAN;
         }
@@ -359,7 +360,7 @@ bool BjutNet::checkLoginStatus(QString& msg, LoginType type)
             emit status_update(false, m_nTime, m_nFlow, m_nFee);
             return false;
         }
-        if(200 == getUrl(url4, content))
+        if(200 == m_http.getUrlHtml(url4, content))
         {
             m_netType = BJUT_LAN;
         }
@@ -396,7 +397,7 @@ bool BjutNet::checkLoginStatus(QString& msg, LoginType type)
     else
     {
         QString content;
-        if(200 == getUrl(url4, content))
+        if(200 == m_http.getUrlHtml(url4, content))
         {
             m_netType = BJUT_LAN;
         }
@@ -407,7 +408,7 @@ bool BjutNet::checkLoginStatus(QString& msg, LoginType type)
         }
         if(IPv6 == type)
         {
-            content = getUrl(url6);
+            content = m_http.getUrlHtml(url6);
         }
         QString errmsg(tr("没有登录网关%1，未检测到%2\n"));
 #ifdef QT_DEBUG
@@ -452,299 +453,40 @@ bool BjutNet::checkLoginStatus(QString& msg, LoginType type)
     return true;
 }
 
-bool BjutNet::checkNetStatus(QString &msg)
+bool WebLgn::checkNetStatus(QString &msg)
 {
     UNUSED(msg);
 //    int id = QHostInfo::lookupHost("www.bjut.edu.cn", nullptr, nullptr);
 //    QHostInfo info(id);
 //    return QHostInfo::NoError == info.error();
-    return getUrl(QUrl("http://www.bjut.edu.cn/404.html")).size() > 0;
+    return m_http.getUrlHtml(QUrl("http://www.bjut.edu.cn/404.html")).size() > 0;
 }
 
-bool BjutNet::start_monitor()
+bool WebLgn::start_monitor()
 {
+    m_bRun = true;
     if(!this->isRunning())
     {    //启动线程
         this->start(IdlePriority);
-        connect(&m_netMan, &QNetworkConfigurationManager::onlineStateChanged, this, &BjutNet::online_status_change);
+        connect(&m_netCfgMan, &QNetworkConfigurationManager::onlineStateChanged, this, &WebLgn::online_status_change);
     }
     return true;
 }
 
-bool BjutNet::stop_monitor()
+bool WebLgn::stop_monitor()
 {
+    m_bRun = false;
     if(this->isRunning())
     {
-        this->terminate();
-        disconnect(&m_netMan, &QNetworkConfigurationManager::onlineStateChanged, this, &BjutNet::online_status_change);
+        //this->quit();
+        this->wait();
+        //this->terminate();
+        disconnect(&m_netCfgMan, &QNetworkConfigurationManager::onlineStateChanged, this, &WebLgn::online_status_change);
     }
     return true;
 }
 
-bool BjutNet::load_account(const QString path)
-{
-    QFileInfo *fi;
-    if(path.length() == 0)
-    {
-        QString conf_file_home = (QDir::homePath() + "/.bjutnet/account.json");
-        fi = new QFileInfo(conf_file_home);
-        if(!fi->exists())
-        {
-#ifndef Q_OS_WIN
-            delete fi;
-            QString conf_file_etc = "/etc/bjutnet.d/account.json";
-            fi = new QFileInfo(conf_file_etc);
-            if(!fi->exists())
-            {
-#endif
-                delete fi;
-                QString conf_file_model = (QDir::currentPath() + "/account.json");
-                fi = new QFileInfo(conf_file_model);
-                if(!fi->exists())
-                {
-                    emit message(QDateTime::currentDateTime(), "cannot find any configure files.\n");
-                    delete fi;
-                    return false;
-                }
-#ifndef Q_OS_WIN
-            }
-#endif
-        }
-    }
-    else
-    {
-        fi = new QFileInfo(path);
-    }
-    if(!fi->exists())
-    {
-        emit message(QDateTime::currentDateTime(), "cannot find the configure file("+fi->fileName()+").\n");
-        delete fi;
-        return false;
-    }
-    if(fi->isReadable())
-    {
-        QFile f(fi->filePath());
-        delete fi;
-        f.open(QFile::ReadOnly);
-        QJsonParseError jp_err;
-        const QJsonDocument jd = QJsonDocument::fromJson(f.readAll(), &jp_err);
-        f.close();
-        if(jp_err.error == QJsonParseError::NoError)
-        {
-            const QJsonObject jo = jd.object();
-            if(jo.contains("account"))
-            {
-                m_strAccount = jo["account"].toString();
-            }
-            if(jo.contains("password"))
-            {
-                m_strPassword = jo["password"].toString();
-            }
-            if(jo.contains("type"))
-            {
-                m_loginType = LoginType(jo["type"].toInt()+1);
-            }
-            if(jo.contains("ipv4"))
-            {
-                m_loginType = LoginType(m_loginType & ((jo["ipv4"].toInt() % 2) * int(IPv4)));
-            }
-            if(jo.contains("ipv6"))
-            {
-                m_loginType = LoginType(m_loginType & ((jo["ipv6"].toInt() % 2) * int(IPv6)));
-            }
-            return true;
-        }
-        else{
-            emit message(QDateTime::currentDateTime(), jp_err.errorString());
-            return false;
-        }
-    }
-    return false;
-}
-
-bool BjutNet::save_account(const QString path)
-{
-    QFile f(path);
-    QDir d;
-    if(path.length() == 0)
-    {
-
-        QString conf_file_home = (QDir::homePath() + "/.bjutnet/account.json");
-        f.setFileName(conf_file_home);
-        if(!f.exists())
-        {
-#ifndef Q_OS_WIN
-            QString conf_file_etc = "/etc/bjutnet.d/account.json";
-            f.setFileName(conf_file_etc);
-            //etc没有写入权限
-            if(!f.exists() || !f.open(QFile::WriteOnly) || !f.isWritable())
-            {
-#endif
-                QString conf_file_model = (QDir::currentPath() + "/account.json");
-                f.setFileName(conf_file_model);
-                if(!f.exists() || !f.open(QFile::WriteOnly) || !f.isWritable())
-                {
-                    //不存在，则创建目录
-                    d.setPath(QDir::homePath());
-                    d.mkdir(".bjutnet");
-                    f.setFileName(conf_file_home);
-                }
-#ifndef Q_OS_WIN
-            }
-#endif
-        }
-    }
-    if(f.isOpen() || f.open(QFile::WriteOnly))//文件已打开或打开成功
-    {
-        QJsonObject jo;
-        jo.insert("account", m_strAccount);
-        jo.insert("password", m_strPassword);
-        jo.insert("type", int(m_loginType) - 1);
-        QJsonDocument jd;
-        jd.setObject(jo);
-        QByteArray data= jd.toJson(QJsonDocument::Compact);
-        f.write(data);
-        f.close();
-        return true;
-    }
-    return false;
-}
-
-QString BjutNet::getUrl(QUrl url)
-{
-    QString content;
-    getUrl(url, content);
-    return content;
-}
-
-int BjutNet::getUrl(QUrl url, QString &content)
-{
-    //建立http连接
-    QNetworkAccessManager* pManager = new QNetworkAccessManager(this);
-    QNetworkRequest request;
-    if(url.scheme() == "https"){
-        //ssl连接
-        QSslConfiguration conf = request.sslConfiguration();
-        conf.setPeerVerifyMode(QSslSocket::VerifyNone);
-        conf.setProtocol(QSsl::TlsV1SslV3);
-        request.setSslConfiguration(conf);
-    }
-    QEventLoop loop;
-    request.setUrl(url);
-    QNetworkReply *pReply = pManager->get(request);
-
-    //设置请求回应的回调
-    connect(pReply , SIGNAL(finished()) , &loop , SLOT(quit()));
-    //等待回应
-    loop.exec();
-
-    if(pReply->error() != QNetworkReply::NoError)//error
-    {
-        message(QDateTime::currentDateTime(), QString("Get url error:%1").arg(pReply->errorString()));
-        return 0;
-    }
-    //读取
-    QByteArray data = pReply->readAll();
-#ifdef QT_DEBUG
-    if(data.size() == 0)
-        qDebug() << "getUrl Error: " << pReply->errorString();
-#endif
-    //数据转码
-    QTextCodec *codec = QTextCodec::codecForHtml(data);
-    content.clear();
-    content.append(codec->toUnicode(data));
-
-    int status = pReply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
-    //QList<QByteArray> ls = pReply->rawHeaderList();
-    //int status = pReply->rawHeader("").toInt();
-
-    delete pManager;
-    return status;
-}
-
-QString BjutNet::postUrl(QUrl url, QMap<QString, QString> data)
-{
-    QString content;
-    postUrl(url, data, content);
-    return content;
-}
-
-int BjutNet::postUrl(QUrl url, QMap<QString, QString> data, QString &content)
-{
-    QString arg;
-    auto end = data.cend();
-    for(auto it = data.cbegin(); it != end; ++it)
-    {
-        arg.append(it.key());
-        arg.append('=');
-        arg.append(it.value());
-        arg.append('&');
-    }
-    if(arg.endsWith('&'))
-    {
-        arg.remove(arg.size()-1, 1);
-    }
-    return postUrl(url, arg, content);
-}
-
-QString BjutNet::postUrl(QUrl url, QString arg)
-{
-    QString content;
-    postUrl(url, arg, content);
-    return content;
-}
-
-int BjutNet::postUrl(QUrl url, QString arg, QString &content)
-{
-    QByteArray postArray;
-    postArray.append(arg);
-    //建立http连接
-    QNetworkAccessManager* pManager = new QNetworkAccessManager(this);
-    QNetworkRequest request;
-    if(url.scheme() == "https"){
-        //ssl连接
-        QSslConfiguration conf = request.sslConfiguration();
-        conf.setPeerVerifyMode(QSslSocket::VerifyNone);
-        conf.setProtocol(QSsl::TlsV1SslV3);
-        request.setSslConfiguration(conf);
-    }
-    QEventLoop loop;
-    request.setUrl(url);
-    request.setHeader(QNetworkRequest::UserAgentHeader,
-                      "Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/64.0.3282.167 Safari/537.36");
-    request.setHeader(QNetworkRequest::ContentLengthHeader,
-                      postArray.size());
-    request.setHeader(QNetworkRequest::ContentTypeHeader,
-                      "application/x-www-form-urlencoded");
-    QNetworkReply *pReply = pManager->post(request, postArray);
-
-    //设置请求回应的回调
-    connect(pReply , SIGNAL(finished()) , &loop , SLOT(quit()));
-    //等待回应
-    loop.exec();
-
-    if(pReply->error() != QNetworkReply::NoError)//error
-    {
-        message(QDateTime::currentDateTime(), QString("Post url error:%1").arg(pReply->errorString()));
-        return 0;
-    }
-    //读取
-    QByteArray data = pReply->readAll();
-#ifdef QT_DEBUG
-    if(data.size() == 0)
-        qDebug() << "getUrl Error: " << pReply->errorString();
-#endif
-    //数据转码
-    QTextCodec *codec = QTextCodec::codecForHtml(data);
-    content.clear();
-    content.append(codec->toUnicode(data));
-    int status = pReply->rawHeader("status").toInt();
-
-    delete pManager;
-    return status;
-}
-
-QString BjutNet::convertMsg(int msg, QString msga)
+QString WebLgn::convertMsg(int msg, QString msga)
 {
     QString str;
     switch(msg)
@@ -809,7 +551,7 @@ QString BjutNet::convertMsg(int msg, QString msga)
     return str;
 }
 
-void BjutNet::online_status_change(bool online)
+void WebLgn::online_status_change(bool online)
 {
     if(online)
     {
@@ -825,15 +567,28 @@ void BjutNet::online_status_change(bool online)
     }
 }
 
-void BjutNet::run()
+void WebLgn::run()
 {
     bool is_login = false;
     QDateTime time;
     bool suc = false;
     int sleepsec = 1;
+    int slept= 0;
     QString msg;
-    while(true)
+    while(m_bRun)
     {
+        if(slept < sleepsec)
+        {
+            this->sleep(1);
+            ++slept;
+            if(slept < sleepsec)
+            {
+                continue;
+            }
+            else {
+                slept = 0;
+            }
+        }
         msg.clear();
         suc = this->checkLoginStatus(msg);
         time = QDateTime::currentDateTime();
@@ -845,11 +600,11 @@ void BjutNet::run()
                 emit message(time, msg);
             }
             is_login = true;
-            this->sleep(30);
+            sleepsec = 30;
         }
         else if(UnknownNet == m_netType)//非校园网
         {
-            this->sleep(sleepsec);
+            //sleepsec = 1;
             if(sleepsec < 1024)//最大17分钟试一次
             {
                 sleepsec *= 2;
@@ -870,7 +625,7 @@ void BjutNet::run()
             }
             else
             {
-                this->sleep(sleepsec);
+                //this->sleep(sleepsec);
                 if(sleepsec < 1024)//最大17分钟试一次
                 {
                     sleepsec *= 2;
