@@ -5,6 +5,13 @@
 #include "HttpClient.h"
 #include <QDateTime>
 
+struct OnlineClientInfo{
+    QString strID;
+    QString strIPv4;
+    QString strIpv6;
+    QString strMAC;
+};
+
 class WebJfself : public QObject
 {
     Q_OBJECT
@@ -13,12 +20,15 @@ public:
     bool login();
 
     void refreshAccount();
+    void refreshOnline();
 
     PROPERTY_READ(bool, hasOnline, m_hasOnline)
     PROPERTY_READ(int, TotalFlow, m_nTotalFlow)
     PROPERTY_READ(double, TotalMoney, m_nTotalMoney)
     PROPERTY_READ_CONST(QString, AccountStatus, m_strAccountStatus)
     PROPERTY_READ_CONST(QString, AccountName, m_strAccountName)
+    PROPERTY_READ_CONST(QString, ServiceName, m_strService)
+    PROPERTY_READ_CONST(QVector<OnlineClientInfo>, OnlineClient, m_lstOnline)
 
     const QString &getAccount() const;
     void setAccount(const QString &account);
@@ -39,6 +49,7 @@ private:
     QString m_strAccountStatus;
     QString m_strAccountName;
     QString m_strService;
+    QVector<OnlineClientInfo> m_lstOnline;
 };
 
 inline const QString &WebJfself::getAccount() const

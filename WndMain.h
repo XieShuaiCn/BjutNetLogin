@@ -38,11 +38,14 @@ Q_SIGNALS:
     void showed();
     void closeEvent(QCloseEvent *event);
     void paintEvent(QPaintEvent *event);
+    void resizeEvent(QResizeEvent *event);
 public slots:
     void initUI();
     void on_show();
     void on_close(QCloseEvent *event);
     void on_paint(QPaintEvent *event);
+    void on_resize(QResizeEvent *event);
+    void on_btnDetail_clicked();
     void on_btnApply_clicked();
     void on_btnLogout_clicked();
     void on_btnLogin_clicked();
@@ -56,7 +59,9 @@ protected slots:
 private:
     //界面所需变量
     QFrame *m_frmGraph;
+    QRect m_rectFlowGraph;
     QLabel *m_lblService;
+    QLabel *m_lblFlowUsed;
 
     QFrame *m_frmInfo;
     QLabel *m_lblInfoTime;
@@ -69,7 +74,17 @@ private:
     QLabel *m_lblFlowUnit;
     QLabel *m_lblFeeUnit;
 
+    QPushButton *m_btnLogin;
+    QPushButton *m_btnLogout;
+    QPushButton *m_btnDetail;
+
     QFrame *m_frmOnline;
+    QLabel *m_lblClent1_ip4;
+    QLabel *m_lblClent1_ip6;
+    QPushButton *m_btnOffline1;
+    QLabel *m_lblClent2_ip4;
+    QLabel *m_lblClent2_ip6;
+    QPushButton *m_btnOffline2;
 
     QFrame *m_frmAccount;
     QLabel *m_lblAccount;
@@ -78,8 +93,6 @@ private:
     QLineEdit *m_editAccount;
     QLineEdit *m_editPassword;
     QComboBox *m_cmbType;
-    QPushButton *m_btnLogin;
-    QPushButton *m_btnLogout;
     QPushButton *m_btnApply;
     QPushButton *m_btnApplyMenu;
     QMenu *m_menuBtnApply;
@@ -90,6 +103,7 @@ private:
     HLabel *m_lblVersion;
 
     //逻辑控制所需变量
+    bool m_bShowDetail = false;
     bool m_bApplyLogin;
     bool m_bNeedUpdate;
     BjutNet *m_net;

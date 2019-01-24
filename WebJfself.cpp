@@ -1,13 +1,15 @@
 #include "WebJfself.h"
+#include <QTextCodec>
 #include <QJsonParseError>
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QJsonValue>
-#include <QTextCodec>
+#include <QRegExp>
 
 WebJfself::WebJfself()
 {
     m_http.setCodec("UTF-8");
+    m_lstOnline.reserve(2);
 }
 
 bool WebJfself::login()
@@ -95,6 +97,10 @@ void WebJfself::refreshAccount()
                     auto money = node.value("leftmoeny").toString();
                     m_nTotalMoney = static_cast<int>(money.left(money.size()-1).toDouble() * 100);
                 }
+                if(node.contains("service"))
+                {
+                    m_strService = node.value("service").toString();
+                }
                 if(node.contains("onlinestate"))
                 {
                     m_hasOnline = static_cast<bool>(node.value("onlinestate").toString().toInt());
@@ -116,6 +122,71 @@ void WebJfself::refreshAccount()
         else {
             emit message(QDateTime::currentDateTime(),
                          "解析账户信息失败:"+jp_err.errorString());
+#ifdef QT_DEBUG
+            QFile f("refresh_account.json");
+            f.open(QIODevice::WriteOnly | QIODevice::Text);
+            f.write(content);
+            f.close();
+#endif
+        }
+    }
+}
+
+void WebJfself::refreshOnline()
+{
+    QString content;
+    int status = m_http.getUrlHtml(QUrl(QString("https://jfself.bjut.edu.cn/nav_offLine")),
+                                   content);
+//    QFile f("nav_offline.0.html");
+//    f.open(QIODevice::ReadOnly|QIODevice::Text);
+//    content = QString(f.readAll());
+//    f.close();
+//    int status = 200;
+    if(status == 200 || status == 0)
+    {
+        int i1 = content.indexOf("<tbody>", 0, Qt::CaseInsensitive);
+        int i2 = content.indexOf("</tbody>", 0, Qt::CaseInsensitive);
+        if(i1 >= 0 && i2 >= 0 && i2 > i1)
+        {
+            m_lstOnline.clear();
+            QString tbody = content.mid(i1+7, i2-i1-7);
+            i1 = 0;            i2 = 0;
+            for(int n = 0; n < 2; ++n){
+                i1 = tbody.indexOf("<tr>", i2, Qt::CaseInsensitive);
+                i2 = tbody.indexOf("</tr>", i1, Qt::CaseInsensitive);
+                if(i1>=0){
+                    int j1 = tbody.indexOf("<td>", i1, Qt::CaseInsensitive);
+                    int j2 = tbody.indexOf("</td>", j1, Qt::CaseInsensitive);
+                    QString ipv4 = tbody.mid(j1+4, j2-j1-4);
+                    ipv4 = ipv4.replace("&nbsp;", "").trimmed();
+                    j1 = tbody.indexOf("<td>", j2, Qt::CaseInsensitive);
+                    j2 = tbody.indexOf("</td>", j1, Qt::CaseInsensitive);
+                    QString ipv6 = tbody.mid(j1+4, j2 -j1-4);
+                    ipv6 = ipv6.replace("&nbsp;", "").trimmed();
+                    j1 = tbody.indexOf("<td>", j2, Qt::CaseInsensitive);
+                    j2 = tbody.indexOf("</td>", j1, Qt::CaseInsensitive);
+                    QString macad = tbody.mid(j1+4, j2 -j1-4);
+                    macad = macad.replace("&nbsp;", "").trimmed();
+                    j1 = tbody.indexOf("<td style=\"display:none;\">", j2, Qt::CaseInsensitive);
+                    j2 = tbody.indexOf("</td>", j1, Qt::CaseInsensitive);
+                    QString id = tbody.mid(j1+26, j2 -j1-26);
+                    id = id.replace("&nbsp;", "").trimmed();
+                    m_lstOnline.push_back({id, ipv4, ipv6, macad});
+                }
+                else {
+                    break;
+                }
+            }
+        }
+        else {
+            emit message(QDateTime::currentDateTime(),
+                         QString("解析在线信息失败:tbody(%1,%2)").arg(i1).arg(i2));
+#ifdef QT_DEBUG
+            QFile f("nav_offline.html");
+            f.open(QIODevice::WriteOnly | QIODevice::Text);
+            f.write(content.toLocal8Bit());
+            f.close();
+#endif
         }
     }
 }

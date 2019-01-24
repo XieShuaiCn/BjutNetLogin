@@ -6,7 +6,8 @@
 
 QT       += core \
             gui \
-            network
+            network \
+            xml
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
