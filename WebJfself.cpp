@@ -60,8 +60,29 @@ bool WebJfself::login()
     return false;
 }
 
-void WebJfself::refreshAccount()
+bool WebJfself::checkLogin()
 {
+    const QByteArray htmlTag("html");
+    QByteArray content;
+    int status = m_http.downUrlData(QUrl(QString("https://jfself.bjut.edu.cn/refreshaccount?t=%1")
+                                        .arg(1.0 * qrand() / RAND_MAX)),
+                                    content);
+    if(status == 200 || status == 0)
+    {
+        if(content.indexOf(htmlTag) < 0 && content.indexOf('{') >= 0)
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
+bool WebJfself::refreshAccount()
+{
+    if(!checkLogin()){
+        login();
+        if(!checkLogin()) return false;
+    }
     QByteArray content;
     int status = m_http.downUrlData(QUrl(QString("https://jfself.bjut.edu.cn/refreshaccount?t=%1")
                                         .arg(1.0 * qrand() / RAND_MAX)),
@@ -85,7 +106,7 @@ void WebJfself::refreshAccount()
                     }
                     emit message(QDateTime::currentDateTime(),
                                   "刷新账户信息失败");
-                    return;
+                    return false;
                 }
                 const auto node = jo.value("note").toObject();
                 if(node.contains("leftFlow"))
@@ -116,7 +137,7 @@ void WebJfself::refreshAccount()
                     int r = name.indexOf(')');
                     m_strAccountName = name.mid(l, r-l);
                 }
-                return;
+                return true;
             }
         }
         else {
@@ -130,10 +151,15 @@ void WebJfself::refreshAccount()
 #endif
         }
     }
+    return false;
 }
 
-void WebJfself::refreshOnline()
+bool WebJfself::refreshOnline()
 {
+    if(!checkLogin()){
+        login();
+        if(!checkLogin()) return false;
+    }
     QString content;
     int status = m_http.getUrlHtml(QUrl(QString("https://jfself.bjut.edu.cn/nav_offLine")),
                                    content);
@@ -177,6 +203,8 @@ void WebJfself::refreshOnline()
                     break;
                 }
             }
+            emit online_status_update(m_lstOnline);
+            return true;
         }
         else {
             emit message(QDateTime::currentDateTime(),
@@ -189,4 +217,5 @@ void WebJfself::refreshOnline()
 #endif
         }
     }
+    return false;
 }

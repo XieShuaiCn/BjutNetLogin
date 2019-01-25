@@ -4,11 +4,10 @@
 #include "common.h"
 #include "HttpClient.h"
 #include <atomic>
-#include <QThread>
 #include <QTime>
 #include <QNetworkConfigurationManager>
 
-class WebLgn : public QThread
+class WebLgn : public QObject
 {
     Q_OBJECT
 
@@ -34,10 +33,6 @@ public:
     bool checkLoginStatus(QString &msg, LoginType type = AutoLoginType);
     //检测网络是否畅通
     bool checkNetStatus(QString &msg);
-    //启动监视器
-    bool start_monitor();
-    //停止监视器
-    bool stop_monitor();
     int getTime() const
     {
         return m_nTime;
@@ -89,12 +84,8 @@ public:
         return m_isOnline;
     }
 protected:
-    void run();
-
     QString convertMsg(int msg, QString msga = "");
 private:
-    QNetworkConfigurationManager m_netCfgMan;
-    std::atomic_bool m_bRun;
     //账号信息
     QString m_strAccount;
     QString m_strPassword;
@@ -110,7 +101,7 @@ signals:
     void message(const QDateTime& time, const QString& info);
     //更新状态（是否登录，已用时间（分钟），已用流量（千字节），剩余金额（分））
     void status_update(bool login, int time, int flow, int fee);
-private slots:
+public slots:
     void online_status_change(bool online);
 };
 

@@ -8,7 +8,7 @@
 struct OnlineClientInfo{
     QString strID;
     QString strIPv4;
-    QString strIpv6;
+    QString strIPv6;
     QString strMAC;
 };
 
@@ -17,10 +17,14 @@ class WebJfself : public QObject
     Q_OBJECT
 public:
     WebJfself();
+    //登录
     bool login();
-
-    void refreshAccount();
-    void refreshOnline();
+    //检查登录状态
+    bool checkLogin();
+    //刷新账户信息
+    bool refreshAccount();
+    //刷新在线列表
+    bool refreshOnline();
 
     PROPERTY_READ(bool, hasOnline, m_hasOnline)
     PROPERTY_READ(int, TotalFlow, m_nTotalFlow)
@@ -37,6 +41,7 @@ public:
 signals:
     //监视消息
     void message(const QDateTime& time, const QString& info);
+    void online_status_update(const QVector<OnlineClientInfo> &info);
 private:
     HttpClient m_http;
     //账号信息

@@ -4,11 +4,15 @@
 #include <QJsonObject>
 #include <QJsonDocument>
 
-BjutNet::BjutNet(WndMain *mainWindow)
+BjutNet::BjutNet(WndMain *mainWindow):
+    QThread()
 {
+    m_bRun = false;
     m_wndMain = mainWindow;
     connect(&m_webLgn, &WebLgn::message, this, &BjutNet::message);
     connect(&m_webJfself, &WebJfself::message, this, &BjutNet::message);
+    connect(&m_tmCheckLgn, &QTimer::timeout, this, &BjutNet::checkLgn);
+    connect(&m_tmCheckOnline, &QTimer::timeout, this, &BjutNet::checkOnline);
 }
 
 
@@ -149,4 +153,109 @@ void BjutNet::synchronizeAccount()
     m_webLgn.setLoginType(m_loginType);
     m_webJfself.setAccount(m_strAccount);
     m_webJfself.setPassword(m_strPassword);
+}
+
+void BjutNet::checkLgn()
+{
+    static int sleepsec = 1;
+    static bool is_login = false;
+    QString msg;
+    bool suc = m_webLgn.checkLoginStatus(msg);
+    QDateTime time = QDateTime::currentDateTime();
+    if (suc)
+    {
+        //首次登录时或间隔一段时间输出信息
+        if (!is_login)
+        {
+            emit message(time, msg);
+        }
+        is_login = true;
+        if(m_tmCheckLgn.interval() != 1000*30)
+            m_tmCheckLgn.start(1000*30);
+    }
+    else if(WebLgn::UnknownNet == m_webLgn.getNetType())//非校园网
+    {
+        if(m_tmCheckLgn.interval() != 1000*30)
+            m_tmCheckLgn.start(1000*30);
+    }
+    else//校园网未登录
+    {
+        //登录
+        is_login = false;
+        emit message(time, msg);
+        msg.clear();
+        suc = m_webLgn.login(msg);
+        time = QDateTime::currentDateTime();
+        emit message(time, msg);
+        if (suc)
+        {
+            sleepsec = 1;
+        }
+        else
+        {
+            //this->sleep(sleepsec);
+            if(sleepsec < 1024)//最大17分钟试一次
+            {
+                sleepsec *= 2;
+            }
+        }
+        m_tmCheckLgn.start(sleepsec);
+    }
+}
+
+void BjutNet::checkOnline()
+{
+    if(m_webJfself.refreshOnline())
+    {
+        if(m_tmCheckOnline.interval() != 1000*60*30)
+            m_tmCheckOnline.start(1000*60*30);
+    }
+    else {
+        if(m_tmCheckOnline.interval() != 1000*60)
+            m_tmCheckOnline.start(1000*60);
+    }
+}
+
+bool BjutNet::start_monitor()
+{
+    m_tmCheckLgn.start(1000*30);//30sec
+    m_tmCheckOnline.start(1000*10);//30min
+//    m_bRun = true;
+    if(!this->isRunning())
+    {    //启动线程
+        this->start(IdlePriority);
+        connect(&m_netCfgMan, &QNetworkConfigurationManager::onlineStateChanged, &m_webLgn, &WebLgn::online_status_change);
+    }
+    return true;
+}
+
+bool BjutNet::stop_monitor()
+{
+    m_tmCheckLgn.stop();
+    m_tmCheckOnline.stop();
+//    m_bRun = false;
+//    if(this->isRunning())
+//    {
+//        //this->quit();
+//        this->wait();
+//        //this->terminate();
+//        disconnect(&m_netCfgMan, &QNetworkConfigurationManager::onlineStateChanged, &m_webLgn, &WebLgn::online_status_change);
+//    }
+    return true;
+}
+
+
+void BjutNet::run()
+{
+    for(int i = 0; i < 3 && !m_webJfself.checkLogin(); ++i)
+        m_webJfself.login();
+    if(m_webJfself.checkLogin())
+    {
+        m_webJfself.refreshAccount();
+        m_webJfself.refreshOnline();
+    }
+    QString msg;
+    for(int i = 0; i < 3 && !m_webLgn.checkLoginStatus(msg); ++i)
+        m_webLgn.login(msg);
+    m_webLgn.checkLoginStatus(msg);
 }

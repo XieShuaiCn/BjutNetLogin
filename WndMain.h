@@ -54,6 +54,7 @@ public slots:
     void on_lblVersion_clicked();
     void on_txtMsg_message(const QDateTime& time, const QString& info);
     void on_account_status(bool login, int time, int flow, int fee);
+    void on_online_status(const QVector<OnlineClientInfo> &info);
 protected slots:
     void downloadProgress(qint64 bytesReceived, qint64 bytesTotal);
 private:

@@ -5,10 +5,12 @@
 #include "WebLgn.h"
 #include "WebJfself.h"
 #include "WndMain.h"
+#include <QThread>
+#include <QTimer>
 
 class WndMain;
 
-class BjutNet : public QObject
+class BjutNet : public QThread
 {
     Q_OBJECT
 public:
@@ -19,6 +21,14 @@ public:
     bool saveAccount(const QString path = "");
     //同步账号信息
     void synchronizeAccount();
+    //检查登录状态
+    void checkLgn();
+    //检查在线列表
+    void checkOnline();
+    //启动监视器
+    bool start_monitor();
+    //停止监视器
+    bool stop_monitor();
     //设置主窗口
     PROPERTY_WRITE(WndMain*, MainWindow, m_wndMain)
     //获取账号
@@ -70,8 +80,14 @@ public:
 signals:
     //监视消息
     void message(const QDateTime& time, const QString& info);
+protected:
+    void run();
 private:
     WndMain *m_wndMain;
+    QNetworkConfigurationManager m_netCfgMan;
+    std::atomic_bool m_bRun;
+    QTimer m_tmCheckLgn;
+    QTimer m_tmCheckOnline;
     //用户配置信息
     QString m_strAccount;
     QString m_strPassword;

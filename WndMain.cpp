@@ -39,19 +39,17 @@ WndMain::WndMain(QWidget *parent) :
     connect(m_actMenuApplyLogin, &QAction::triggered, this, &WndMain::on_actApplyLogin_triggered);
     connect(m_net, &BjutNet::message, this, &WndMain::on_txtMsg_message);
     connect(&m_net->getWebLgn(), &WebLgn::status_update, this, &WndMain::on_account_status);
+    connect(&m_net->getWebJfself(), &WebJfself::online_status_update, this, &WndMain::on_online_status);
     //光标
     m_txtMsg->setFocus();
     //启动网关监控
     m_net->loadAccount();
-    m_net->getWebLgn().start_monitor();
-    m_net->getWebJfself().login();
-    m_net->getWebJfself().refreshOnline();
-    m_net->getWebJfself().refreshAccount();
+    m_net->start_monitor();
 }
 
 WndMain::~WndMain()
 {
-    m_net->getWebLgn().stop_monitor();
+    m_net->stop_monitor();
     delete m_net;
     delete m_actMenuApplyLogin;
     delete m_actMenuApplyOnly;
@@ -147,21 +145,21 @@ void WndMain::initUI()
     m_frmOnline->setFrameShape(QFrame::StyledPanel);
     m_frmOnline->setFrameShadow(QFrame::Raised);
     m_lblClent1_ip4 = new QLabel(m_frmOnline);
-    m_lblClent1_ip4->setGeometry(QRect(10, 10, 50, 20));
-    m_lblClent1_ip4->setFont(font_s13);
+    m_lblClent1_ip4->setGeometry(QRect(10, 10, 200, 20));
+    m_lblClent1_ip4->setFont(font_s12);
     m_lblClent1_ip6 = new QLabel(m_frmOnline);
-    m_lblClent1_ip6->setGeometry(QRect(10, 40, 50, 20));
-    m_lblClent1_ip6->setFont(font_s13);
+    m_lblClent1_ip6->setGeometry(QRect(10, 40, 220, 20));
+    m_lblClent1_ip6->setFont(font_s10);
     m_btnOffline1 = new QPushButton(m_frmOnline);
-    m_btnOffline1->setGeometry(QRect(150, 8, 80, 25));
+    m_btnOffline1->setGeometry(QRect(180, 8, 50, 25));
     m_lblClent2_ip4 = new QLabel(m_frmOnline);
-    m_lblClent2_ip4->setGeometry(QRect(10, 70, 50, 20));
-    m_lblClent2_ip4->setFont(font_s13);
+    m_lblClent2_ip4->setGeometry(QRect(10, 70, 200, 20));
+    m_lblClent2_ip4->setFont(font_s12);
     m_lblClent2_ip6 = new QLabel(m_frmOnline);
-    m_lblClent2_ip6->setGeometry(QRect(10, 100, 50, 20));
-    m_lblClent2_ip6->setFont(font_s13);
+    m_lblClent2_ip6->setGeometry(QRect(10, 100, 220, 20));
+    m_lblClent2_ip6->setFont(font_s10);
     m_btnOffline2 = new QPushButton(m_frmOnline);
-    m_btnOffline2->setGeometry(QRect(150, 68, 80, 25));
+    m_btnOffline2->setGeometry(QRect(180, 68, 50, 25));
     //账号信息
     m_frmAccount = new QFrame(this);
     m_frmAccount->setGeometry(QRect(260, 190, 300, 130));
@@ -234,10 +232,10 @@ void WndMain::initUI()
     m_btnDetail->setText(QString("<<<展开"));
     m_lblClent1_ip4->setText(QString("IPv4"));
     m_lblClent1_ip6->setText(QString("IPv6"));
-    m_btnOffline1->setText(QString("强制下线"));
+    m_btnOffline1->setText(QString("下线"));
     m_lblClent2_ip4->setText(QString("IPv4"));
     m_lblClent2_ip6->setText(QString("IPv6"));
-    m_btnOffline2->setText(QString("强制下线"));
+    m_btnOffline2->setText(QString("下线"));
     m_lblAccount->setText(QString("账号："));
     m_lblPassword->setText(QString("密码："));
     m_lblType->setText(QString("类型"));
@@ -401,6 +399,28 @@ void WndMain::on_account_status(bool login, int time, int flow, int fee)
     m_lcdNumFlow->display(fflow);
     m_lblFlowUnit->setText(flowUnit[flowUnitIndex]);
     m_lcdNumFee->display(float(fee) / 100);
+    int totalFlow = m_net->getWebJfself().getTotalFlow();//MB
+    if(totalFlow > 0){
+        m_lblFlowUsed->setText(QString("已用：%1 %").arg(100 * flow / totalFlow / 1024));
+        on_paint(nullptr);
+    }
+}
+
+void WndMain::on_online_status(const QVector<OnlineClientInfo> &info)
+{
+    if(info.size() > 0)
+    {
+        const auto &c = info.first();
+        m_lblClent1_ip4->setText("IPv4:"+c.strIPv4);
+        m_lblClent1_ip6->setText("IPv6:"+c.strIPv6);
+    }
+    if(info.size() > 1)
+    {
+        const auto &c = info.last();
+        m_lblClent2_ip4->setText("IPv4:"+c.strIPv4);
+        m_lblClent2_ip6->setText("IPv6:"+c.strIPv6);
+    }
+    this->repaint();
 }
 
 void WndMain::on_txtMsg_message(const QDateTime& time, const QString& info)
@@ -441,7 +461,7 @@ void WndMain::on_btnApply_clicked()
     }
     if(m_bApplyLogin)
     {
-        if(!m_net->getWebLgn().stop_monitor())
+        if(!m_net->stop_monitor())
         {
             on_txtMsg_message(QDateTime::currentDateTime(), "在线保持停止失败");
         }
@@ -457,7 +477,7 @@ void WndMain::on_btnApply_clicked()
             on_txtMsg_message(QDateTime::currentDateTime(), "账号上线失败");
         }
         on_txtMsg_message(QDateTime::currentDateTime(), msg);
-        if(!m_net->getWebLgn().start_monitor())
+        if(!m_net->start_monitor())
         {
             on_txtMsg_message(QDateTime::currentDateTime(), "在线保持启动失败");
         }
@@ -466,7 +486,7 @@ void WndMain::on_btnApply_clicked()
 
 void WndMain::on_btnLogout_clicked()
 {
-    m_net->getWebLgn().stop_monitor();
+    m_net->stop_monitor();
     QString msg;
     m_net->getWebLgn().logout(msg);
     on_txtMsg_message(QDateTime::currentDateTime(), msg);
@@ -474,8 +494,8 @@ void WndMain::on_btnLogout_clicked()
 
 void WndMain::on_btnLogin_clicked()
 {
-    m_net->getWebLgn().stop_monitor();
-    m_net->getWebLgn().start_monitor();
+    m_net->stop_monitor();
+    m_net->start_monitor();
 }
 
 void WndMain::on_lblVersion_clicked()

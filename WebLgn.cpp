@@ -13,14 +13,12 @@
 
 
 WebLgn::WebLgn() :
-    QThread(),
     m_loginType(IPv4),
     m_netType(UnknownNet),
     m_nTime(0.0f),
     m_nFlow(0.0f),
     m_nFee(0.0f)
 {
-    m_bRun = false;
     m_http.setCodec("GBK");
 }
 
@@ -462,30 +460,6 @@ bool WebLgn::checkNetStatus(QString &msg)
     return m_http.getUrlHtml(QUrl("http://www.bjut.edu.cn/404.html")).size() > 0;
 }
 
-bool WebLgn::start_monitor()
-{
-    m_bRun = true;
-    if(!this->isRunning())
-    {    //启动线程
-        this->start(IdlePriority);
-        connect(&m_netCfgMan, &QNetworkConfigurationManager::onlineStateChanged, this, &WebLgn::online_status_change);
-    }
-    return true;
-}
-
-bool WebLgn::stop_monitor()
-{
-    m_bRun = false;
-    if(this->isRunning())
-    {
-        //this->quit();
-        this->wait();
-        //this->terminate();
-        disconnect(&m_netCfgMan, &QNetworkConfigurationManager::onlineStateChanged, this, &WebLgn::online_status_change);
-    }
-    return true;
-}
-
 QString WebLgn::convertMsg(int msg, QString msga)
 {
     QString str;
@@ -563,74 +537,6 @@ void WebLgn::online_status_change(bool online)
             msg.clear();
             this->login(msg);
             emit message(QDateTime::currentDateTime(), msg);
-        }
-    }
-}
-
-void WebLgn::run()
-{
-    bool is_login = false;
-    QDateTime time;
-    bool suc = false;
-    int sleepsec = 1;
-    int slept= 0;
-    QString msg;
-    while(m_bRun)
-    {
-        if(slept < sleepsec)
-        {
-            this->sleep(1);
-            ++slept;
-            if(slept < sleepsec)
-            {
-                continue;
-            }
-            else {
-                slept = 0;
-            }
-        }
-        msg.clear();
-        suc = this->checkLoginStatus(msg);
-        time = QDateTime::currentDateTime();
-        if (suc)
-        {
-            //首次登录时或间隔一段时间输出信息
-            if (!is_login)
-            {
-                emit message(time, msg);
-            }
-            is_login = true;
-            sleepsec = 30;
-        }
-        else if(UnknownNet == m_netType)//非校园网
-        {
-            //sleepsec = 1;
-            if(sleepsec < 1024)//最大17分钟试一次
-            {
-                sleepsec *= 2;
-            }
-        }
-        else//校园网未登录
-        {
-            //登录
-            is_login = false;
-            emit message(time, msg);
-            msg.clear();
-            suc = this->login(msg);
-            time = QDateTime::currentDateTime();
-            emit message(time, msg);
-            if (suc)
-            {
-                sleepsec = 1;
-            }
-            else
-            {
-                //this->sleep(sleepsec);
-                if(sleepsec < 1024)//最大17分钟试一次
-                {
-                    sleepsec *= 2;
-                }
-            }
         }
     }
 }
