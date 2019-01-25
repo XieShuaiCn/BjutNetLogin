@@ -23,11 +23,11 @@ WebLgn::WebLgn() :
 }
 
 
-bool WebLgn::login(QString& msg)
+bool WebLgn::login()
 {
     if(m_strAccount.length() == 0)
     {
-        msg.append("Your account has not been setted.");
+        emit message(QDateTime::currentDateTime(), QString("没有设置账户信息。"));
         return false;
     }
 
@@ -38,25 +38,25 @@ bool WebLgn::login(QString& msg)
         if (test.size() == 0)
         {
             m_netType = UnknownNet;
-            msg.append("当前无法访问校园网，请稍候重试。\n");
+            emit message(QDateTime::currentDateTime(), QString("当前无法访问校园网，请稍候重试。"));
             return false;
         }
         else
         {
             m_netType = BJUT_WIFI;
-            return loginOnWIFI(msg);
+            return loginOnWIFI();
         }
     }
     else
     {
         m_netType = BJUT_LAN;
-        return loginOnLAN(msg);
+        return loginOnLAN();
     }
-    msg.append("Program should not reach here.");
+    emit message(QDateTime::currentDateTime(), QString("Program should not reach here."));
     return false;
 }
 
-bool WebLgn::loginOnLAN(QString &msg, LoginType type)
+bool WebLgn::loginOnLAN(LoginType type)
 {
     QString url;
     int v46s = 0;
@@ -73,7 +73,7 @@ bool WebLgn::loginOnLAN(QString &msg, LoginType type)
     case IPv4:
         v46s = 1;
         url = "https://lgn.bjut.edu.cn";
-        if(checkLoginStatus(msg, IPv4))
+        if(checkLoginStatus(IPv4))
         {
             return true;
         }
@@ -81,7 +81,7 @@ bool WebLgn::loginOnLAN(QString &msg, LoginType type)
     case IPv6:
         v46s = 2;
         url = "https://lgn6.bjut.edu.cn";
-        if(checkLoginStatus(msg, IPv6))
+        if(checkLoginStatus(IPv6))
         {
             return true;
         }
@@ -89,19 +89,19 @@ bool WebLgn::loginOnLAN(QString &msg, LoginType type)
     case IPv4_6:
         v46s = 0;
         url = "https://lgn6.bjut.edu.cn/V6?https://lgn.bjut.edu.cn";
-        ipv4_login = checkLoginStatus(msg, IPv4);
-        ipv6_login = checkLoginStatus(msg, IPv6);
+        ipv4_login = checkLoginStatus(IPv4);
+        ipv6_login = checkLoginStatus(IPv6);
         if(!ipv4_login && ipv6_login)
         {
-            return loginOnLAN(msg, IPv4);
+            return loginOnLAN(IPv4);
         }
         if(ipv4_login && !ipv6_login)
         {
-            return loginOnLAN(msg, IPv6);
+            return loginOnLAN(IPv6);
         }
         break;
     default:
-        msg.append("无法识别的登录类型\n");
+        emit message(QDateTime::currentDateTime(), QString("无法识别的登录类型(%1)。").arg(int(type)));
         return false;
     }
 
@@ -131,7 +131,7 @@ bool WebLgn::loginOnLAN(QString &msg, LoginType type)
     }
     if(content.contains("<title>登录成功窗</title>"))
     {
-        msg.append("登录成功\n");
+        emit message(QDateTime::currentDateTime(), QString("登录成功。"));
         return true;
     }
     if(content.contains("<title>信息返回窗</title>"))
@@ -140,7 +140,7 @@ bool WebLgn::loginOnLAN(QString &msg, LoginType type)
         pos = content.indexOf(regMsg);
         if(pos < 0)
         {
-            msg.append("未检测到返回消息\n");
+            emit message(QDateTime::currentDateTime(), QString("未检测到返回消息。"));
             emit status_update(false, m_nTime, m_nFlow, m_nFee);
             return false;
         }
@@ -154,13 +154,13 @@ bool WebLgn::loginOnLAN(QString &msg, LoginType type)
             html_msga = regMsga.cap(1);
         }
         QString msgIDstr = convertMsg(msgID, html_msga);
-        msg.append(msgIDstr);
+        emit message(QDateTime::currentDateTime(), msgIDstr);
         return msgID > 10;
     }
     return false;
 }
 
-bool WebLgn::loginOnWIFI(QString &msg, LoginType type)
+bool WebLgn::loginOnWIFI(LoginType type)
 {
     QString url;
     bool ipv6_succ = true;
@@ -175,14 +175,14 @@ bool WebLgn::loginOnWIFI(QString &msg, LoginType type)
         url = "https://wlgn.bjut.edu.cn";
         break;
     case IPv6://IPv6不区分有线还是无线
-        return loginOnLAN(msg, IPv6);
+        return loginOnLAN(IPv6);
         break;
     case IPv4_6:
-        ipv6_succ = loginOnLAN(msg, IPv6);
+        ipv6_succ = loginOnLAN(IPv6);
         url = "https://wlgn.bjut.edu.cn";
         break;
     default:
-        msg.append("无法识别的登录类型");
+        emit message(QDateTime::currentDateTime(), QString("无法识别的登录类型(%1)。").arg(int(type)));
         return false;
     }
 
@@ -197,19 +197,19 @@ bool WebLgn::loginOnWIFI(QString &msg, LoginType type)
     {
         if(content.indexOf("You have successfully logged in"))
         {
-            msg.append("IPv4登录成功");
+            emit message(QDateTime::currentDateTime(), QString("IPv4登录成功"));
             return ipv6_succ;
         }
     }
     return false;
 }
 
-bool WebLgn::logout(QString &msg)
+bool WebLgn::logout()
 {
-    return BJUT_WIFI == m_netType ? logoutOnWIFI(msg) : logoutOnLAN(msg);
+    return BJUT_WIFI == m_netType ? logoutOnWIFI() : logoutOnLAN();
 }
 
-bool WebLgn::logoutOnLAN(QString &msg, LoginType type)
+bool WebLgn::logoutOnLAN(LoginType type)
 {
     if(type == AutoLoginType)
     {
@@ -226,7 +226,7 @@ bool WebLgn::logoutOnLAN(QString &msg, LoginType type)
     int pos = content.indexOf(regMsg);
     if(pos < 0)
     {
-        msg.append("未检测到返回消息。\n");
+       emit message(QDateTime::currentDateTime(), QString("未检测到返回消息。"));
         emit status_update(false, m_nTime, m_nFlow, m_nFee);
         return false;
     }
@@ -235,32 +235,34 @@ bool WebLgn::logoutOnLAN(QString &msg, LoginType type)
     pos = content.indexOf(regTime);
     if(pos < 0)
     {
-        msg.append("未检测到时间。\n");
+        emit message(QDateTime::currentDateTime(), QString("未检测到时间。"));
         QString html_time = regTime.cap(1);
         m_nTime = html_time.toInt();
     }
     pos = content.indexOf(regFlow);
     if(pos < 0)
     {
-        msg.append("未检测到流量。\n");
+        emit message(QDateTime::currentDateTime(), QString("未检测到流量。"));
         QString html_flow = regFlow.cap(1);
         m_nFlow = html_flow.toInt();
     }
     pos = content.indexOf(regFee);
     if(pos < 0)
     {
-        msg.append("未检测到费用。\n");
+        emit message(QDateTime::currentDateTime(), QString("未检测到费用。"));
         QString html_fee = regFee.cap(1);
         m_nFee = html_fee.toInt() / 100;
     }
+    QString msg;
     msg.sprintf("已用时间：%.3f小时，已用流量：%.3fMB，剩余金额：%.2f元。\n",
                 float(m_nTime) / 60, float(m_nFlow) / 1024, float(m_nFee) / 100);
+    emit message(QDateTime::currentDateTime(), msg);
     emit status_update(false, m_nTime, m_nFlow, m_nFee);
-    msg.append(msgID == 14 ? "注销成功" : "注销失败");
+    emit message(QDateTime::currentDateTime(), QString(msgID == 14 ? "注销成功" : "注销失败"));
     return msgID == 14;
 }
 
-bool WebLgn::logoutOnWIFI(QString &msg, LoginType type)
+bool WebLgn::logoutOnWIFI(LoginType type)
 {
     bool ipv6_succ = true;
     if(type == AutoLoginType)
@@ -270,11 +272,11 @@ bool WebLgn::logoutOnWIFI(QString &msg, LoginType type)
 
     if(type == IPv4_6)
     {
-        ipv6_succ = logoutOnLAN(msg, IPv6);
+        ipv6_succ = logoutOnLAN(IPv6);
     }
     else if(type == IPv6)
     {
-        return logoutOnLAN(msg, IPv6);
+        return logoutOnLAN(IPv6);
     }
 
     QUrl url4("http://Wlgn.bjut.edu.cn/F.htm");
@@ -286,7 +288,7 @@ bool WebLgn::logoutOnWIFI(QString &msg, LoginType type)
     int pos = content.indexOf(regMsg);
     if(pos < 0)
     {
-        msg.append("未检测到返回消息。\n");
+        emit message(QDateTime::currentDateTime(), QString("未检测到返回消息。"));
         emit status_update(false, m_nTime, m_nFlow, m_nFee);
         return false;
     }
@@ -295,37 +297,38 @@ bool WebLgn::logoutOnWIFI(QString &msg, LoginType type)
     pos = content.indexOf(regTime);
     if(pos < 0)
     {
-        msg.append("未检测到时间。\n");
+        emit message(QDateTime::currentDateTime(), QString("未检测到时间。"));
         QString html_time = regTime.cap(1);
         m_nTime = html_time.toInt();
     }
     pos = content.indexOf(regFlow);
     if(pos < 0)
     {
-        msg.append("未检测到流量。\n");
+        emit message(QDateTime::currentDateTime(), QString("未检测到流量。"));
         QString html_flow = regFlow.cap(1);
         m_nFlow = html_flow.toInt();
     }
     pos = content.indexOf(regFee);
     if(pos < 0)
     {
-        msg.append("未检测到费用。\n");
+        emit message(QDateTime::currentDateTime(), QString("未检测到费用。"));
         QString html_fee = regFee.cap(1);
         m_nFee = html_fee.toInt() / 100;
     }
+    QString msg;
     msg.sprintf("已用时间：%.3f小时，已用流量：%.3fMB，剩余金额：%.2f元。\n",
                 float(m_nTime) / 60, float(m_nFlow) / 1024, float(m_nFee) / 100);
+    emit message(QDateTime::currentDateTime(), msg);
     emit status_update(false, m_nTime, m_nFlow, m_nFee);
-    msg.append(msgID == 14 ? "注销成功" : "注销失败");
+   emit message(QDateTime::currentDateTime(), QString(msgID == 14 ? "注销成功" : "注销失败"));
     return ipv6_succ && msgID == 14;
 }
 
-bool WebLgn::checkLoginStatus(QString& msg, LoginType type)
+bool WebLgn::checkLoginStatus(LoginType type)
 {
-    msg.clear();
     QUrl url6("http://lgn6.bjut.edu.cn/");
     QUrl url4("http://lgn.bjut.edu.cn/");
-    QUrl url4_wifi("http://wlgn.bjut.edu.cn/1.html");
+    //QUrl url4_wifi("http://wlgn.bjut.edu.cn/1.html");
 
     //解析数据
     QRegExp regTime("time='(\\d+) *';", Qt::CaseInsensitive);
@@ -341,7 +344,7 @@ bool WebLgn::checkLoginStatus(QString& msg, LoginType type)
     if(type == IPv4_6)
     {
         QString content;
-        if(200 == m_http.getUrlHtml(url6, content))
+        if(200 == m_http.getUrlHtml(url4, content))
         {
             m_netType = BJUT_LAN;
         }
@@ -353,12 +356,28 @@ bool WebLgn::checkLoginStatus(QString& msg, LoginType type)
         int pos = content.indexOf(regTime);
         if(pos < 0)
         {
-            msg.append("没有登录网关6，未检测到时间\n");
+            emit message(QDateTime::currentDateTime(), QString("没有登录网关4，未检测到时间。"));
             m_isOnline = false;
             emit status_update(false, m_nTime, m_nFlow, m_nFee);
             return false;
         }
-        if(200 == m_http.getUrlHtml(url4, content))
+        pos = content.indexOf(regFlow);
+        if(pos < 0)
+        {
+            emit message(QDateTime::currentDateTime(), QString("没有登录网关4，未检测到流量。"));
+            m_isOnline = false;
+            emit status_update(false, m_nTime, m_nFlow, m_nFee);
+            return false;
+        }
+        pos = content.indexOf(regFee);
+        if(pos < 0)
+        {
+           emit message(QDateTime::currentDateTime(), QString("没有登录网关4，未检测到费用。"));
+            m_isOnline = false;
+            emit status_update(false, m_nTime, m_nFlow, m_nFee);
+            return false;
+        }
+        if(200 == m_http.getUrlHtml(url6, content))
         {
             m_netType = BJUT_LAN;
         }
@@ -370,23 +389,7 @@ bool WebLgn::checkLoginStatus(QString& msg, LoginType type)
         pos = content.indexOf(regTime);
         if(pos < 0)
         {
-            msg.append("没有登录网关4，未检测到时间\n");
-            m_isOnline = false;
-            emit status_update(false, m_nTime, m_nFlow, m_nFee);
-            return false;
-        }
-        pos = content.indexOf(regFlow);
-        if(pos < 0)
-        {
-            msg.append("没有登录网关4，未检测到流量\n");
-            m_isOnline = false;
-            emit status_update(false, m_nTime, m_nFlow, m_nFee);
-            return false;
-        }
-        pos = content.indexOf(regFee);
-        if(pos < 0)
-        {
-            msg.append("没有登录网关4，未检测到费用\n");
+            emit message(QDateTime::currentDateTime(), QString("没有登录网关6，未检测到时间。"));
             m_isOnline = false;
             emit status_update(false, m_nTime, m_nFlow, m_nFee);
             return false;
@@ -409,13 +412,11 @@ bool WebLgn::checkLoginStatus(QString& msg, LoginType type)
             content = m_http.getUrlHtml(url6);
         }
         QString errmsg(tr("没有登录网关%1，未检测到%2\n"));
-#ifdef QT_DEBUG
-        qDebug() << content << "\n";
-#endif
         int pos = content.indexOf(regTime);
         if(pos < 0)
         {
-            msg.append(errmsg.arg(IPv4 == type ? 4 : 6).arg("时间"));
+            emit message(QDateTime::currentDateTime(),
+                         errmsg.arg(IPv4 == type ? 4 : 6).arg("时间"));
             m_isOnline = false;
             emit status_update(false, m_nTime, m_nFlow, m_nFee);
             return false;
@@ -423,7 +424,8 @@ bool WebLgn::checkLoginStatus(QString& msg, LoginType type)
         pos = content.indexOf(regFlow);
         if(pos < 0)
         {
-            msg.append(errmsg.arg(IPv4 == type ? 4 : 6).arg("流量"));
+            emit message(QDateTime::currentDateTime(),
+                         errmsg.arg(IPv4 == type ? 4 : 6).arg("流量"));
             m_isOnline = false;
             emit status_update(false, m_nTime, m_nFlow, m_nFee);
             return false;
@@ -431,7 +433,8 @@ bool WebLgn::checkLoginStatus(QString& msg, LoginType type)
         pos = content.indexOf(regFee);
         if(pos < 0)
         {
-            msg.append(errmsg.arg(IPv4 == type ? 4 : 6).arg("费用"));
+            emit message(QDateTime::currentDateTime(),
+                         errmsg.arg(IPv4 == type ? 4 : 6).arg("费用"));
             m_isOnline = false;
             emit status_update(false, m_nTime, m_nFlow, m_nFee);
             return false;
@@ -443,21 +446,23 @@ bool WebLgn::checkLoginStatus(QString& msg, LoginType type)
     m_nTime = html_time.toInt();
     m_nFlow = html_flow.toInt();
     m_nFee = html_fee.toInt() / 100;
+    QString msg;
     msg.sprintf("已用时间：%.3f小时，已用流量：%.3fMB，剩余金额：%.2f元\n",
                 float(m_nTime) / 60, float(m_nFlow) / 1024, float(m_nFee) / 100);
     m_isOnline = true;
+    emit message(QDateTime::currentDateTime(), msg);
     emit status_update(true, m_nTime, m_nFlow, m_nFee);
 
     return true;
 }
 
-bool WebLgn::checkNetStatus(QString &msg)
+bool WebLgn::checkNetStatus()
 {
-    UNUSED(msg);
 //    int id = QHostInfo::lookupHost("www.bjut.edu.cn", nullptr, nullptr);
 //    QHostInfo info(id);
 //    return QHostInfo::NoError == info.error();
-    return m_http.getUrlHtml(QUrl("http://www.bjut.edu.cn/404.html")).size() > 0;
+    QString content;
+    return m_http.getUrlHtml(QUrl("http://lgn.bjut.edu.cn/404.html"), content) >= 200;
 }
 
 QString WebLgn::convertMsg(int msg, QString msga)
@@ -527,16 +532,11 @@ QString WebLgn::convertMsg(int msg, QString msga)
 
 void WebLgn::online_status_change(bool online)
 {
-    if(online)
+    if(online)//网卡在线，非账号在线
     {
-        QString msg;
-        bool ret = this->checkLoginStatus(msg);
-        emit message(QDateTime::currentDateTime(), msg);
-        if(!ret)
+        if(this->checkNetStatus() && !this->checkLoginStatus())
         {
-            msg.clear();
-            this->login(msg);
-            emit message(QDateTime::currentDateTime(), msg);
+            this->login();
         }
     }
 }

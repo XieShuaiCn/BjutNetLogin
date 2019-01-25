@@ -22,17 +22,17 @@ public:
     //构造函数
     WebLgn();
     //登录网关
-    bool login(QString &msg);
-    bool loginOnLAN(QString &msg, LoginType type = AutoLoginType);
-    bool loginOnWIFI(QString &msg, LoginType type = AutoLoginType);
+    bool login();
+    bool loginOnLAN(LoginType type = AutoLoginType);
+    bool loginOnWIFI(LoginType type = AutoLoginType);
     //注销网关
-    bool logout(QString &msg);
-    bool logoutOnLAN(QString &msg, LoginType type = AutoLoginType);
-    bool logoutOnWIFI(QString &msg, LoginType type = AutoLoginType);
+    bool logout();
+    bool logoutOnLAN(LoginType type = AutoLoginType);
+    bool logoutOnWIFI(LoginType type = AutoLoginType);
     //检测网关状态
-    bool checkLoginStatus(QString &msg, LoginType type = AutoLoginType);
+    bool checkLoginStatus(LoginType type = AutoLoginType);
     //检测网络是否畅通
-    bool checkNetStatus(QString &msg);
+    bool checkNetStatus();
     int getTime() const
     {
         return m_nTime;

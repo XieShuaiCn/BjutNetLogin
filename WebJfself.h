@@ -25,6 +25,9 @@ public:
     bool refreshAccount();
     //刷新在线列表
     bool refreshOnline();
+    //下线某个设备
+    bool toOffline(const QString &id);
+    bool toOfflineAll();
 
     PROPERTY_READ(bool, hasOnline, m_hasOnline)
     PROPERTY_READ(int, TotalFlow, m_nTotalFlow)

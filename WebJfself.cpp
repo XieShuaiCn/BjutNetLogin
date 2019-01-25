@@ -219,3 +219,56 @@ bool WebJfself::refreshOnline()
     }
     return false;
 }
+
+bool WebJfself::toOffline(const QString &id)
+{
+    if(!checkLogin()){
+        login();
+        if(!checkLogin()) return false;
+    }
+    QByteArray content;
+    int status = m_http.downUrlData(QUrl(QString("https://jfself.bjut.edu.cn/tooffline?t=%1&fldsessionid=%2")
+                                    .arg(1.0 * qrand() / RAND_MAX).arg(id)),
+                                    content);
+    if(status == 200 || status == 0)
+    {
+        QJsonParseError jp_err;
+        const QJsonDocument jd = QJsonDocument::fromJson(content, &jp_err);
+        if(jp_err.error == QJsonParseError::NoError)
+        {
+            const QJsonObject jo = jd.object();
+            if(jo.contains("date"))
+            {
+                QString success = jo.value("date").toString();
+                if (success != "success")
+                {
+                    if(jo.contains("outmessage"))
+                    {
+                        emit message(QDateTime::currentDateTime(),
+                                     "ToOffline ID:"+(jo.value("outmessage").toString()));
+                    }
+                    emit message(QDateTime::currentDateTime(),
+                                  "强制设备下线失败");
+                    return false;
+                }
+                if(jo.contains("outmessage") && jo.value("outmessage").toString() == "true")
+                {
+                    emit message(QDateTime::currentDateTime(),
+                                  QString("强制设备(%1)下线成功").arg(id));
+                    return true;
+                }
+            }
+        }
+    }
+    return false;
+}
+
+bool WebJfself::toOfflineAll()
+{
+    for(const OnlineClientInfo &it : m_lstOnline)
+    {
+        toOffline(it.strID);
+    }
+    return true;
+}
+

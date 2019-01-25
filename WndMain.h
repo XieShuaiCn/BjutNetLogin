@@ -45,10 +45,13 @@ public slots:
     void on_close(QCloseEvent *event);
     void on_paint(QPaintEvent *event);
     void on_resize(QResizeEvent *event);
+    void on_btnRefresh_clicked();
     void on_btnDetail_clicked();
     void on_btnApply_clicked();
     void on_btnLogout_clicked();
     void on_btnLogin_clicked();
+    void on_btnOffline1_clicked();
+    void on_btnOffline2_clicked();
     void on_actApplyLogin_triggered(bool checked = false);
     void on_actApplyOnly_triggered(bool checked = false);
     void on_lblVersion_clicked();
@@ -63,6 +66,9 @@ private:
     QRect m_rectFlowGraph;
     QLabel *m_lblService;
     QLabel *m_lblFlowUsed;
+    QLabel *m_lblStatus;
+    QLabel *m_lblStatusFlag;
+    QPushButton *m_btnRefresh;
 
     QFrame *m_frmInfo;
     QLabel *m_lblInfoTime;
@@ -107,6 +113,7 @@ private:
     bool m_bShowDetail = false;
     bool m_bApplyLogin;
     bool m_bNeedUpdate;
+    QString m_strOnlineID[2];
     BjutNet *m_net;
     Updater m_updater;
     QProgressDialog *m_dlgProgress;

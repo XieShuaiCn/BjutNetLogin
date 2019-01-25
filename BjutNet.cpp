@@ -158,18 +158,15 @@ void BjutNet::synchronizeAccount()
 void BjutNet::checkLgn()
 {
     static int sleepsec = 1;
-    static bool is_login = false;
-    QString msg;
-    bool suc = m_webLgn.checkLoginStatus(msg);
+    static QDateTime lastOfflined = QDateTime::currentDateTime();
+    static QDateTime lastOnlined = QDateTime::currentDateTime();
+    static int nOfflined = 0;
+    bool suc = m_webLgn.checkLoginStatus();
     QDateTime time = QDateTime::currentDateTime();
     if (suc)
     {
+        lastOnlined = time;
         //首次登录时或间隔一段时间输出信息
-        if (!is_login)
-        {
-            emit message(time, msg);
-        }
-        is_login = true;
         if(m_tmCheckLgn.interval() != 1000*30)
             m_tmCheckLgn.start(1000*30);
     }
@@ -180,13 +177,31 @@ void BjutNet::checkLgn()
     }
     else//校园网未登录
     {
+        if(nOfflined > 3)
+        {
+            nOfflined = 0;
+            for(int i = 0; i< 3; ++i)
+            {
+                m_webJfself.refreshOnline();
+                m_webJfself.toOfflineAll();
+                sleep(1);
+                m_webJfself.refreshAccount();
+                if(!m_webJfself.gethasOnline())
+                    break;
+            }
+        }
+        else if(lastOfflined < lastOnlined
+                && lastOnlined.toSecsSinceEpoch() - lastOnlined.toSecsSinceEpoch() < 75)//75sec
+        {
+            ++nOfflined;
+        }
+        else {
+            nOfflined = 0;
+        }
+        lastOfflined = time;
         //登录
-        is_login = false;
-        emit message(time, msg);
-        msg.clear();
-        suc = m_webLgn.login(msg);
+        suc = m_webLgn.login();
         time = QDateTime::currentDateTime();
-        emit message(time, msg);
         if (suc)
         {
             sleepsec = 1;
@@ -205,6 +220,7 @@ void BjutNet::checkLgn()
 
 void BjutNet::checkOnline()
 {
+    m_webJfself.refreshAccount();
     if(m_webJfself.refreshOnline())
     {
         if(m_tmCheckOnline.interval() != 1000*60*30)
@@ -218,14 +234,14 @@ void BjutNet::checkOnline()
 
 bool BjutNet::start_monitor()
 {
-    m_tmCheckLgn.start(1000*30);//30sec
-    m_tmCheckOnline.start(1000*10);//30min
+    m_tmCheckLgn.start(100);//30sec
+    m_tmCheckOnline.start(100);//30min
 //    m_bRun = true;
-    if(!this->isRunning())
-    {    //启动线程
-        this->start(IdlePriority);
+//    if(!this->isRunning())
+//    {    //启动线程
+//        this->start(IdlePriority);
         connect(&m_netCfgMan, &QNetworkConfigurationManager::onlineStateChanged, &m_webLgn, &WebLgn::online_status_change);
-    }
+//    }
     return true;
 }
 
@@ -239,7 +255,7 @@ bool BjutNet::stop_monitor()
 //        //this->quit();
 //        this->wait();
 //        //this->terminate();
-//        disconnect(&m_netCfgMan, &QNetworkConfigurationManager::onlineStateChanged, &m_webLgn, &WebLgn::online_status_change);
+        disconnect(&m_netCfgMan, &QNetworkConfigurationManager::onlineStateChanged, &m_webLgn, &WebLgn::online_status_change);
 //    }
     return true;
 }
@@ -254,8 +270,7 @@ void BjutNet::run()
         m_webJfself.refreshAccount();
         m_webJfself.refreshOnline();
     }
-    QString msg;
-    for(int i = 0; i < 3 && !m_webLgn.checkLoginStatus(msg); ++i)
-        m_webLgn.login(msg);
-    m_webLgn.checkLoginStatus(msg);
+    for(int i = 0; i < 3 && !m_webLgn.checkLoginStatus(); ++i)
+        m_webLgn.login();
+    m_webLgn.checkLoginStatus();
 }
