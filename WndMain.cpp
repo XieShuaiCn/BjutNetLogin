@@ -79,8 +79,8 @@ void WndMain::initUI()
     //状态图
     m_frmGraph = new QFrame(this);
     m_frmGraph->setGeometry(QRect(10, 10, 280, 160));
-    m_frmGraph->setFrameShape(QFrame::StyledPanel);
-    m_frmGraph->setFrameShadow(QFrame::Raised);
+    m_frmGraph->setFrameShape(QFrame::NoFrame);
+    m_frmGraph->setFrameShadow(QFrame::Plain);
     m_lblFlowUsed = new QLabel(m_frmGraph);
     m_lblFlowUsed->setGeometry(QRect(0, 20, 100, 20));
     m_lblFlowUsed->setFont(font_s12);
@@ -101,8 +101,8 @@ void WndMain::initUI()
     //账户状态
     m_frmInfo = new QFrame(this);
     m_frmInfo->setGeometry(QRect(310, 10, 250, 120));
-    m_frmInfo->setFrameShape(QFrame::StyledPanel);
-    m_frmInfo->setFrameShadow(QFrame::Raised);
+    m_frmInfo->setFrameShape(QFrame::NoFrame);
+    m_frmInfo->setFrameShadow(QFrame::Plain);
     //状态label
     m_lblInfoTime = new QLabel(m_frmInfo);
     m_lblInfoTime->setGeometry(QRect(20, 10, 100, 20));
@@ -155,8 +155,8 @@ void WndMain::initUI()
     //在线列表
     m_frmOnline = new QFrame(this);
     m_frmOnline->setGeometry(QRect(10, 190, 280, 130));
-    m_frmOnline->setFrameShape(QFrame::StyledPanel);
-    m_frmOnline->setFrameShadow(QFrame::Raised);
+    m_frmOnline->setFrameShape(QFrame::NoFrame);
+    m_frmOnline->setFrameShadow(QFrame::Plain);
     m_lblClent1_ip4 = new QLabel(m_frmOnline);
     m_lblClent1_ip4->setGeometry(QRect(10, 10, 200, 20));
     m_lblClent1_ip4->setFont(font_s12);
@@ -176,8 +176,8 @@ void WndMain::initUI()
     //账号信息
     m_frmAccount = new QFrame(this);
     m_frmAccount->setGeometry(QRect(300, 190, 260, 130));
-    m_frmAccount->setFrameShape(QFrame::StyledPanel);
-    m_frmAccount->setFrameShadow(QFrame::Raised);
+    m_frmAccount->setFrameShape(QFrame::NoFrame);
+    m_frmAccount->setFrameShadow(QFrame::Plain);
     m_lblAccount = new QLabel(m_frmAccount);
     m_lblAccount->setGeometry(QRect(10, 10, 50, 20));
     m_lblAccount->setFont(font_s12);
@@ -249,7 +249,7 @@ void WndMain::initUI()
     m_lblFeeUnit->setText(QString("元"));
     m_btnLogin->setText(QString("上线"));
     m_btnLogout->setText(QString("下线"));
-    m_btnDetail->setText(QString("<<<展开"));
+    m_btnDetail->setText(QString("<<简洁"));
     m_lblClent1_ip4->setText(QString("IPv4"));
     m_lblClent1_ip6->setText(QString("IPv6"));
     m_btnOffline1->setText(QString("下线"));
@@ -502,12 +502,12 @@ void WndMain::on_btnDetail_clicked()
     if(m_bShowDetail)
     {   this->setFixedSize(575, 190);
         m_bShowDetail = false;
-        m_btnDetail->setText(QString("<<<展开"));
+        m_btnDetail->setText(QString("<<简洁"));
     }
     else
     {   this->setFixedSize(575, 490);
         m_bShowDetail = true;
-        m_btnDetail->setText(QString("<<<收起"));
+        m_btnDetail->setText(QString("<<高级"));
     }
 }
 
