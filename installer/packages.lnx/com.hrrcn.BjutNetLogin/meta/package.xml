@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Package>
+    <DisplayName>主程序</DisplayName>
+    <Description>网关登陆器，用于登陆校园网关。</Description>
+    <Version>3.0.0-13</Version>
+    <ReleaseDate>2019-01-26</ReleaseDate>
+    <Licenses>
+        <License name="本软件使用协议" file="license.txt" />
+        <License name="QT开源协议" file="license_qt.txt" />
+    </Licenses>
+    <Default>script</Default>
+    <Script>installscript.qs</Script>
+    <UserInterfaces>
+        <UserInterface>page.ui</UserInterface>
+    </UserInterfaces>
+</Package>
