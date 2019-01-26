@@ -1,0 +1,1 @@
+binarycreator.exe -v --offline-only -c config/config.xml -p packages ../../Win32/BjutNetLogin_3.0.0_Win32.exe

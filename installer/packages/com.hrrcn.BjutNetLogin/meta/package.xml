@@ -6,11 +6,8 @@
     <ReleaseDate>2019-01-26</ReleaseDate>
     <Licenses>
         <License name="本软件使用协议" file="license.txt" />
-        <License name="QT开源协议" file="license_qt.txt" />
+        <License name="QT平台开源协议" file="license_qt.txt" />
     </Licenses>
     <Default>script</Default>
     <Script>installscript.qs</Script>
-    <UserInterfaces>
-        <UserInterface>page.ui</UserInterface>
-    </UserInterfaces>
 </Package>

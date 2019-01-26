@@ -47,3 +47,6 @@ target_wrapper.*
 
 # QtCtreator CMake
 CMakeLists.txt.user*
+
+# Qt installer framework
+/installer/packages/*/data

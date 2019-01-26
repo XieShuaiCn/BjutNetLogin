@@ -8,13 +8,8 @@
     <InstallerWindowIcon>installericon</InstallerWindowIcon>
     <InstallerApplicationIcon>installericon</InstallerApplicationIcon>
     <Logo>logo256.png</Logo>
-    <Watermark></Watermark>
-    <RunProgram></RunProgram>
-    <RunProgramArguments></RunProgramArguments>
-    <RunProgramDescription></RunProgramDescription>
+    <MaintenanceToolName>uninstall</MaintenanceToolName>
     <AllowNonAsciiCharacters>true</AllowNonAsciiCharacters>
-    <Background></Background>
-    <StartMenuDir>BjutNetLogin</StartMenuDir>
-    <TargetDir>@HomeDir@/BjutNetLogin</TargetDir>
-    <AdminTargetDir>/opt/BjutNetLogin</AdminTargetDir>
+    <StartMenuDir>北工大网关登录器</StartMenuDir>
+    <TargetDir>@ApplicationsDir@/BjutNetLogin</TargetDir>
 </Installer>
