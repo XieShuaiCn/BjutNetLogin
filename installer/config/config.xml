@@ -7,7 +7,7 @@
     <ProductUrl>http://bnl.hrrcn.com</ProductUrl>
     <InstallerWindowIcon>installericon</InstallerWindowIcon>
     <InstallerApplicationIcon>installericon</InstallerApplicationIcon>
-    <Logo>logo256.png</Logo>
+    <Logo>logo.ico</Logo>
     <MaintenanceToolName>uninstall</MaintenanceToolName>
     <AllowNonAsciiCharacters>true</AllowNonAsciiCharacters>
     <StartMenuDir>北工大网关登录器</StartMenuDir>

@@ -59,12 +59,7 @@ Component.prototype.createOperations = function()
             "BjutNetLogin", "@TargetDir@/BjutNetLogin.exe");
     }
     else{
-    //TODO: ubuntu .desktop key=value
-        component.addOperation("CreateDesktopEntry", "BjutNetLogin.desktop",
-              "workingDirectory=@TargetDir@", "iconPath=@TargetDir@/logo.ico",
-              "description=运行北工大网关登录器");
-      component.addOperation("CreateDesktopEntry", "@DesktopDir@/BjutNetLogin.desktop",
-            "workingDirectory=@TargetDir@", "iconPath=@TargetDir@/logo.ico",
-            "description=运行北工大网关登录器");
+        component.addOperation("CreateDesktopEntry", "xieshuai-BjutNetLogin.desktop",
+              "Version=@Version@ Type=Application Name=BjutNetLogin Icon=@TargetDir@/logo.ico Exec=@TargetDir@/BjutNetLogin.sh Comment=北京工业大学网关登录器。账号登陆，在线保持。 Categories=Applications;Tools; Terminal=false StartupWMClass=xieshuai-BjutNetLogin");
     }
 }
