@@ -249,7 +249,7 @@ void WndMain::initUI()
     m_lblFeeUnit->setText(QString("元"));
     m_btnLogin->setText(QString("上线"));
     m_btnLogout->setText(QString("下线"));
-    m_btnDetail->setText(QString("<<简洁"));
+    m_btnDetail->setText(QString("<<高级"));
     m_lblClent1_ip4->setText(QString("IPv4"));
     m_lblClent1_ip6->setText(QString("IPv6"));
     m_btnOffline1->setText(QString("下线"));
@@ -502,12 +502,12 @@ void WndMain::on_btnDetail_clicked()
     if(m_bShowDetail)
     {   this->setFixedSize(575, 190);
         m_bShowDetail = false;
-        m_btnDetail->setText(QString("<<简洁"));
+        m_btnDetail->setText(QString("<<高级"));
     }
     else
     {   this->setFixedSize(575, 490);
         m_bShowDetail = true;
-        m_btnDetail->setText(QString("<<高级"));
+        m_btnDetail->setText(QString("<<简洁"));
     }
 }
 

@@ -177,7 +177,13 @@ void BjutNet::checkLgn()
     }
     else//校园网未登录
     {
-        if(nOfflined > 3)
+        if(lastOfflined < lastOnlined
+                && lastOnlined.toSecsSinceEpoch() - lastOnlined.toSecsSinceEpoch() < 75)//75sec
+        {
+            ++nOfflined;
+        }
+
+        else if(nOfflined > 3)
         {
             nOfflined = 0;
             for(int i = 0; i< 3; ++i)
@@ -189,11 +195,6 @@ void BjutNet::checkLgn()
                 if(!m_webJfself.gethasOnline())
                     break;
             }
-        }
-        else if(lastOfflined < lastOnlined
-                && lastOnlined.toSecsSinceEpoch() - lastOnlined.toSecsSinceEpoch() < 75)//75sec
-        {
-            ++nOfflined;
         }
         else {
             nOfflined = 0;
