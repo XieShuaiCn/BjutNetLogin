@@ -4,6 +4,7 @@
 #include <QFile>
 #include <QUrl>
 #include <QDir>
+#include <QProcess>
 #include <QEventLoop>
 #include <QTextCodec>
 #include <QStandardPaths>
@@ -52,13 +53,14 @@ Updater::Updater(QObject *parent) : QObject(parent),
         }
 #endif
     }
+    connect(&m_http, &HttpClient::downloadProgress, this, &Updater::downloadProgress);
 }
 
 bool Updater::checkUpdate()
 {
     bool success = false;
     QString content;
-    int ret = getUrl(QUrl(m_strHostName + "online/newest.php?os="
+    int ret = m_http.getUrlHtml(QUrl(m_strHostName + "online/newest.php?os="
 #ifdef Q_OS_WIN
                           "Windows"
 #elif defined(Q_OS_LINUX)
@@ -99,42 +101,71 @@ bool Updater::needUpdate()
     return m_nNewVersion > m_nOldVersion;
 }
 
-int Updater::getUrl(QUrl url, QString &content)
+bool Updater::downloadNewPackage()
 {
-    //建立http连接
-    QNetworkAccessManager* pManager = new QNetworkAccessManager(this);
-    QNetworkRequest request;
-    QEventLoop loop;
-    request.setUrl(url);
-    QNetworkReply *pReply = pManager->get(request);
-
-    //设置请求回应的回调
-    connect(pReply , SIGNAL(finished()) , &loop , SLOT(quit()));
-    //等待回应
-    loop.exec();
-
-    if(pReply->error() != QNetworkReply::NoError)//error
-    {
-#ifdef QT_DEBUG
-        qDebug() << pReply->errorString() << "\n";
-#endif
-        return pReply->error() + 10000;
+    if(!checkUpdate() || !needUpdate()) {
+        return false;
     }
-    //读取
-    QByteArray data = pReply->readAll();
-#ifdef QT_DEBUG
-    if(data.size() == 0)
-        qDebug() << "getUrl Error: " << pReply->errorString();
+    //http://bnl.hrrcn.com/online/download.php?ver=13&os=Windows
+    //{"success":true,"version":"3.0.0","platform":"Windows","file":"offline\/BjutNetLogin_3.0.0_Win32.exe"}
+    QString content;
+    int ret = m_http.getUrlHtml(QUrl(QString(m_strHostName + "online/download.php?ver=%1&os="
+#ifdef WIN32
+                          "Windows"
+#elif LINUX
+                          "Linux64"
 #endif
-    //数据转码
-    QTextCodec *codec = QTextCodec::codecForHtml(data);
-    content.clear();
-    content.append(codec->toUnicode(data));
+                          ).arg(m_nNewVersion)), content);
+    if(ret != 200){
+        return false;
+    }
+    QJsonParseError jp_err;
+    const QJsonDocument jdoc = QJsonDocument::fromJson(content.toLocal8Bit(), &jp_err);
+    if(jp_err.error == QJsonParseError::NoError) {
+        const QJsonObject jo = jdoc.object();
+        if(jo.contains("file")) {
+            m_strOnlineFileURL = (jo["file"].toString());
+            if(m_strOnlineFileURL.isEmpty() || m_strOnlineFileURL.startsWith('#')){
+                return false;
+            }
+            //生成temp目录
+            QString tempDir;
+            for(int i =0; i < 3; ++i)
+            {
+                QString rs = RandString(6);
+                if(QDir::temp().mkdir("BjutNetLogin_" + rs + ".tmp")) {
+                    tempDir = QDir::tempPath() + "/BjutNetLogin_" + rs + ".tmp/";
+                    break;
+                }
+                if(i == 2){
+                    return false;
+                }
+            }
+            QFileInfo fi(jo["file"].toString());
+            return 200 == m_http.downloadFile(QUrl(m_strHostName + jo["file"].toString()), QByteArray(), tempDir + fi.fileName(), false)
+                    && doInstall(tempDir + fi.fileName());
+        }
+        else {
+            return false;
+        }
+    }
+    else {
+        return false;
+    }
+}
 
-    int status = pReply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
-    //QList<QByteArray> ls = pReply->rawHeaderList();
-    //int status = pReply->rawHeader("").toInt();
+bool Updater::doDownload(const QString & online_path, const QString & local_path)
+{
+    if( 200 == m_http.downloadFile(QUrl(online_path), QByteArray(), local_path, false))
+    {
+        return true;
+    }
+    return false;
+}
 
-    delete pManager;
-    return status;
+bool Updater::doInstall(const QString &local_path)
+{
+    QProcess *proc = new QProcess(this);
+    proc->start(local_path);
+    return proc->waitForStarted();
 }

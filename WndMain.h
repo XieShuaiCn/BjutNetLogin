@@ -29,7 +29,7 @@ class WndMain : public QWidget
     Q_OBJECT
     friend class BjutNet;
 public:
-    explicit WndMain(QWidget *parent = 0);
+    WndMain(QApplication *app = Q_NULLPTR, QWidget *parent = 0);
     ~WndMain();
     void show();
     QString getStatus();
@@ -117,6 +117,7 @@ private:
     BjutNet *m_net;
     Updater m_updater;
     QProgressDialog *m_dlgProgress;
+    QApplication *m_app;
 
 };
 

@@ -74,14 +74,14 @@ void HttpClient::clear_message()
     m_arrMessage.clear();
 }
 
-QString HttpClient::getUrlHtml(QUrl url)
+QString HttpClient::getUrlHtml(const QUrl &url)
 {
     QString content;
     getUrlHtml(url, content);
     return content;
 }
 
-int HttpClient::getUrlHtml(QUrl url, QString &content)
+int HttpClient::getUrlHtml(const QUrl &url, QString &content)
 {
     QByteArray data;
     int status = downUrlData(url, QByteArray(), data, false);
@@ -90,14 +90,14 @@ int HttpClient::getUrlHtml(QUrl url, QString &content)
     return status;
 }
 
-QString HttpClient::postUrlHtml(QUrl url, QMap<QString, QString> data)
+QString HttpClient::postUrlHtml(const QUrl &url, const QMap<QString, QString> &data)
 {
     QString content;
     postUrlHtml(url, data, content);
     return content;
 }
 
-int HttpClient::postUrlHtml(QUrl url, QMap<QString, QString> data, QString &content)
+int HttpClient::postUrlHtml(const QUrl &url, const QMap<QString, QString> &data, QString &content)
 {
     QString arg;
     auto end = data.cend();
@@ -115,14 +115,14 @@ int HttpClient::postUrlHtml(QUrl url, QMap<QString, QString> data, QString &cont
     return postUrlHtml(url, arg, content);
 }
 
-QString HttpClient::postUrlHtml(QUrl url, QString arg)
+QString HttpClient::postUrlHtml(const QUrl &url, const QString &arg)
 {
     QString content;
     postUrlHtml(url, arg, content);
     return content;
 }
 
-int HttpClient::postUrlHtml(QUrl url, QString arg, QString &content)
+int HttpClient::postUrlHtml(const QUrl &url, const QString &arg, QString &content)
 {
     QByteArray postArray;
     QByteArray data;
@@ -137,7 +137,76 @@ int HttpClient::postUrlHtml(QUrl url, QString arg, QString &content)
     return status;
 }
 
-int HttpClient::downUrlData(QUrl url, QByteArray arg, QByteArray &content, bool bPost/*=true*/)
+int HttpClient::downloadFile(const QUrl &url, const QByteArray &arg, const QString &fileName, bool bPost)
+{
+    //建立http连接
+    QNetworkRequest request;
+    if(url.scheme() == "https"){
+        //ssl连接
+        QSslConfiguration conf = request.sslConfiguration();
+        conf.setPeerVerifyMode(QSslSocket::VerifyNone);
+        conf.setProtocol(QSsl::TlsV1SslV3);
+        request.setSslConfiguration(conf);
+    }
+    QEventLoop loop;
+    request.setUrl(url);
+    request.setHeader(QNetworkRequest::UserAgentHeader,
+                      "Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/64.0.3282.167 Safari/537.36");
+
+    if(bPost)
+    {
+        request.setHeader(QNetworkRequest::ContentLengthHeader,
+                          arg.size());
+        request.setHeader(QNetworkRequest::ContentTypeHeader,
+                          "application/x-www-form-urlencoded");
+    }
+//    QBuffer bufArg(&arg);
+//    bufArg.open(QIODevice::ReadOnly);
+//    m_netMan.createRequest(QNetworkAccessManager::PostOperation,
+//                           request, &bufArg);
+//    bufArg.close();
+    request.setRawHeader("Cookie", m_netCookie->getCookieBytes());
+    QNetworkReply *pReply = bPost ? m_netMan.post(request, arg) :
+                                    m_netMan.get(request);
+
+    //设置请求回应的回调
+    connect(pReply, SIGNAL(downloadProgress(qint64,qint64)) , this , SIGNAL(downloadProgress(qint64,qint64)));
+    connect(pReply, SIGNAL(finished()) , &loop , SLOT(quit()));
+    //等待回应
+    loop.exec();
+
+    if(pReply->error() != QNetworkReply::NoError)//error
+    {
+        push_message(QDateTime::currentDateTime(), QString("Down url error:%1").arg(pReply->errorString()));
+        pReply->disconnect();
+        pReply->deleteLater();
+        return pReply->error();
+    }
+    int status = pReply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
+    //int status = pReply->rawHeader("status").toInt();
+    //读取
+    QFile file(fileName);
+    if(status == 200 && file.open(QIODevice::ReadWrite))
+    {
+        int len = 1024*128;
+        char *data = new char[1024*128];
+        do{
+            len = pReply->read(data, 1024*128);
+            if(len > 0)
+            {
+                file.write(data, len);
+            }
+        }while(len > 0);
+        file.close();
+    }
+    pReply->disconnect();
+    pReply->close();
+    //pReply->deleteLater();
+    delete pReply;
+    return status;
+}
+
+int HttpClient::downUrlData(const QUrl &url, const QByteArray &arg, QByteArray &content, bool bPost/*=true*/)
 {
     //建立http连接
     QNetworkRequest request;

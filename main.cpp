@@ -19,7 +19,7 @@ int main(int argc, char *argv[])
         return 0;
     }
     QDir::setCurrent(app.applicationDirPath());
-    WndMain w;
+    WndMain w(&app);
     WndTrayIcon wti(&app, &w);
 
     QObject::connect(&app, &QtSingleApplication::messageReceived, &wti, &WndTrayIcon::reciveMessage);

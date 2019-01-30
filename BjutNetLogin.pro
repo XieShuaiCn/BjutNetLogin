@@ -36,6 +36,7 @@ SOURCES += \
     common.cpp \
     main.cpp \
     WndMain.cpp \
+    WndMain_ui.cpp\
     WndTrayIcon.cpp \
     Updater.cpp \
     HLabel.cpp \
@@ -43,7 +44,7 @@ SOURCES += \
     HNetworkCookieJar.cpp \
     WebLgn.cpp \
     WebJfself.cpp \
-    BjutNet.cpp \
+    BjutNet.cpp
 
 
 HEADERS += \

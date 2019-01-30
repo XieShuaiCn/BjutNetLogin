@@ -1,7 +1,8 @@
 #ifndef UPDATER_H
 #define UPDATER_H
 
-#include <QObject>
+#include "common.h"
+#include "HttpClient.h"
 
 class Updater : public QObject
 {
@@ -17,6 +18,11 @@ public:
     int getOldVersionNum() { return m_nOldVersion; }
     int getNewVersionNum() { return m_nNewVersion; }
     QString getNewIntroduction() { return m_strNewIntroduction; }
+    bool downloadNewPackage();
+    bool doDownload(const QString &online_path, const QString &local_path);
+    bool doInstall(const QString &local_path);
+signals:
+    void downloadProgress(qint64 bytesReceived, qint64 bytesTotal);
 protected:
     int getUrl(QUrl url, QString &content);
     int m_nNewVersion = 0;
@@ -25,6 +31,7 @@ protected:
     QString m_strOldVersion;
     QString m_strNewIntroduction;
     QString m_strOnlineFileURL;
+    HttpClient m_http;
     const QString m_strHostName = "http://bnl.hrrcn.com/";
 };
 
