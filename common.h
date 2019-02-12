@@ -19,4 +19,8 @@
 #define PROPERTY_WRITE(type, name, var) \
     void set##name(type value) { var = value; }
 
+#define PROPERTY_READ_WRITE(type, name, var) \
+    PROPERTY_READ(type, name, var) \
+    PROPERTY_WRITE(type, name, var)
+
 #endif // COMMON_H

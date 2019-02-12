@@ -1,4 +1,6 @@
 #include "WndMain.h"
+#include "WndTrayIcon.h"
+#include "BjutNet.h"
 #include <QtGui/QPainter>
 #include <QtGui/QShowEvent>
 #include <QtGui/QDesktopServices>
@@ -16,12 +18,14 @@
 #include <QtWidgets/QTextEdit>
 #include <QtWidgets/QWidget>
 
-WndMain::WndMain(QApplication *app, QWidget *parent) :
+WndMain::WndMain(QApplication *app, WndTrayIcon *tray, QWidget *parent) :
     QWidget(parent),
     m_bNeedUpdate(false),
-    m_app(app)
+    m_app(app),
+    m_tray(tray)
 {
-    m_net = new BjutNet(this);
+    tray->setMainWindow(this);
+    m_net = tray->getBjutNet();
     m_net->setMainWindow(this);
     //初始化界面
     initUI();
@@ -47,11 +51,7 @@ WndMain::WndMain(QApplication *app, QWidget *parent) :
     //光标
     m_txtMsg->setFocus();
     //启动网关监控
-    if(m_net->loadAccount())
-    {
-        m_net->start_monitor();
-    }
-    else
+    if(m_net->getAccount().size() <= 0)
     {
         on_btnDetail_clicked();
     }
@@ -59,8 +59,6 @@ WndMain::WndMain(QApplication *app, QWidget *parent) :
 
 WndMain::~WndMain()
 {
-    m_net->stop_monitor();
-    delete m_net;
     delete m_actMenuApplyLogin;
     delete m_actMenuApplyOnly;
     delete m_menuBtnApply;
@@ -72,24 +70,6 @@ void WndMain::show()
     //后台处理事件
     QCoreApplication::processEvents();
     on_show();
-}
-
-QString WndMain::getStatus()
-{
-    QString status;
-    const char* flowUnit[] = {"KB", "MB", "GB", "TB"};
-    int flowUnitIndex = 0;
-    WebLgn &lgn = m_net->getWebLgn();
-    float ftime = float(lgn.getTime()) / 60;
-    float fflow = float(lgn.getFlow());
-    while(fflow > 1024)
-    {
-        fflow /= 1024;
-        ++flowUnitIndex;
-    }
-    float ffee = float(lgn.getFee()) / 100;
-    status.sprintf("已用时间：%.2f小时，已用流量：%.2f%s，剩余金额：%.2f元", ftime, fflow, flowUnit[flowUnitIndex], ffee);
-    return status;
 }
 
 void WndMain::on_close(QCloseEvent *event)

@@ -8,7 +8,7 @@ IDI_ICON1 ICON "logo.ico"
 
 VS_VERSION_INFO VERSIONINFO
 
-    FILEVERSION 2,2,1
+    FILEVERSION 3,1,0
     FILEFLAGSMASK 0x3fL
 
 #ifdef _DEBUG
@@ -30,7 +30,7 @@ VS_VERSION_INFO VERSIONINFO
                 VALUE "LegalCopyright", "Copyright (C) 2017-2018"
                 VALUE "OriginalFilename", ""
                 VALUE "ProductName", "BjutNetLogin"
-                VALUE "ProductVersion", "2.2.1"
+                VALUE "ProductVersion", "3.1.0"
 
             END
         END

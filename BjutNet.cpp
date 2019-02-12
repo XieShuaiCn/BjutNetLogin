@@ -4,11 +4,10 @@
 #include <QJsonObject>
 #include <QJsonDocument>
 
-BjutNet::BjutNet(WndMain *mainWindow):
+BjutNet::BjutNet():
     QThread()
 {
     m_bRun = false;
-    m_wndMain = mainWindow;
     connect(&m_webLgn, &WebLgn::message, this, &BjutNet::message);
     connect(&m_webJfself, &WebJfself::message, this, &BjutNet::message);
     connect(&m_tmCheckLgn, &QTimer::timeout, this, &BjutNet::checkLgn);

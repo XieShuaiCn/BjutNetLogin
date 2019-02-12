@@ -14,7 +14,7 @@ class BjutNet : public QThread
 {
     Q_OBJECT
 public:
-    explicit BjutNet(WndMain *mainWindow);
+    BjutNet();
     //加载账号信息
     bool loadAccount(const QString path = "");
     //保存账号信息

@@ -44,7 +44,9 @@ SOURCES += \
     HNetworkCookieJar.cpp \
     WebLgn.cpp \
     WebJfself.cpp \
-    BjutNet.cpp
+    BjutNet.cpp \
+    WndSetting.cpp \
+    WndSetting_ui.cpp
 
 
 HEADERS += \
@@ -57,7 +59,8 @@ HEADERS += \
     HNetworkCookieJar.h \
     WebLgn.h \
     BjutNet.h \
-    WebJfself.h
+    WebJfself.h \
+    WndSetting.h
 
 DISTFILES += \
     C:/Users/XIESHUAI/.bjutnet/account.json \

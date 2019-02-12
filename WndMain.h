@@ -2,9 +2,9 @@
 #define MAINWND_H
 
 #include "common.h"
-#include "BjutNet.h"
 #include "Updater.h"
 #include "HLabel.h"
+#include "WebJfself.h"
 #include <QProgressDialog>
 
 class QAction;
@@ -23,16 +23,16 @@ class QShowEvent;
 class QCloseEvent;
 class QPaintEvent;
 class BjutNet;
+class WndTrayIcon;
 
 class WndMain : public QWidget
 {
     Q_OBJECT
     friend class BjutNet;
 public:
-    WndMain(QApplication *app = Q_NULLPTR, QWidget *parent = 0);
+    WndMain(QApplication *app, WndTrayIcon *tray, QWidget *parent = 0);
     ~WndMain();
     void show();
-    QString getStatus();
 
 Q_SIGNALS:
     void showed();
@@ -114,10 +114,11 @@ private:
     bool m_bApplyLogin;
     bool m_bNeedUpdate;
     QString m_strOnlineID[2];
-    BjutNet *m_net;
     Updater m_updater;
     QProgressDialog *m_dlgProgress;
     QApplication *m_app;
+    WndTrayIcon *m_tray;
+    BjutNet *m_net;
 
 };
 
