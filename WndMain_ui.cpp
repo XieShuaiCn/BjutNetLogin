@@ -112,7 +112,7 @@ void WndMain::initUI()
     m_btnDetail->setFlat(true);
     //在线列表
     m_frmOnline = new QFrame(this);
-    m_frmOnline->setGeometry(QRect(10, 190, 380, 130));
+    m_frmOnline->setGeometry(QRect(10, 190, 370, 130));
     m_frmOnline->setFrameShape(QFrame::NoFrame);
     m_frmOnline->setFrameShadow(QFrame::Plain);
     m_lblClent1_ip4 = new QLabel(m_frmOnline);
@@ -149,12 +149,27 @@ void WndMain::initUI()
     m_lblCopyTip->setGeometry(QRect(m_btnOffline1->pos().x()-80, 8, 80, 25));
     m_lblCopyTip->setFont(font_s12);
     m_lblCopyTip->setStyleSheet("color:#808080;");
-    //账号信息
+
+    //
     m_frmOperation = new QFrame(this);
-    m_frmOperation->setGeometry(QRect(400, 190, 160, 130));
+    m_frmOperation->setGeometry(QRect(390, 190, 170, 130));
     m_frmOperation->setFrameShape(QFrame::NoFrame);
     m_frmOperation->setFrameShadow(QFrame::Plain);
-    m_frmOperation->setVisible(false);
+    m_btnOfficalWeb = new QPushButton(m_frmOperation);
+    m_btnOfficalWeb->setGeometry(QRect(40, 10, 80, 25));
+    m_btnOfficalWeb->setFont(font_s11);
+    m_lblCurrentBook = new QLabel(m_frmOperation);
+    m_lblCurrentBook->setGeometry(QRect(10, 40, 160, 25));
+    m_lblCurrentBook->setFont(font_s10);
+    m_cmbListBook = new QComboBox(m_frmOperation);
+    m_cmbListBook->setGeometry(QRect(10, 70, 150, 25));
+    m_cmbListBook->setFont(font_s11);
+    m_btnRefreshBook = new QPushButton(m_frmOperation);
+    m_btnRefreshBook->setGeometry(QRect(10, 100, 70, 25));
+    m_btnRefreshBook->setFont(font_s11);
+    m_btnSubmitBook = new QPushButton(m_frmOperation);
+    m_btnSubmitBook->setGeometry(QRect(90, 100, 70, 25));
+    m_btnSubmitBook->setFont(font_s11);
 
     //消息日志框
     m_txtMsg = new QTextEdit(this);
@@ -192,6 +207,10 @@ void WndMain::initUI()
     m_lblClent2_ip6->setText(QString("IPv6:"));
     m_btnOffline2->setText(QString("强制下线"));
     m_lblCopyTip->setText(QString("双击复制IP"));
+    m_btnOfficalWeb->setText(QString("办理业务"));
+    m_lblCurrentBook->setText(QString("已预约:[请刷新数据]"));
+    m_btnRefreshBook->setText(QString("刷新套餐"));
+    m_btnSubmitBook->setText(QString("预约套餐"));
     m_lblVersion->setText(QString("版本号：") + m_updater.getOldVersion());
     //根据objectName关联信号
     //QMetaObject::connectSlotsByName(this);

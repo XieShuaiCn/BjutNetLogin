@@ -44,6 +44,9 @@ WndMain::WndMain(WndTrayIcon *tray, QWidget *parent) :
     connect(m_lblClent1_addr6, &HLabel::doubleClicked, this, &WndMain::on_lblClient1addr6_doubleClicked);
     connect(m_lblClent2_addr4, &HLabel::doubleClicked, this, &WndMain::on_lblClient2addr4_doubleClicked);
     connect(m_lblClent2_addr6, &HLabel::doubleClicked, this, &WndMain::on_lblClient2addr6_doubleClicked);
+    connect(m_btnOfficalWeb, &QPushButton::clicked, this, &WndMain::on_btnOffcicalWeb_clicked);
+    connect(m_btnRefreshBook, &QPushButton::clicked, this, &WndMain::on_btnRefreshBook_clicked);
+    connect(m_btnSubmitBook, &QPushButton::clicked, this, &WndMain::on_btnSubmitBook_clicked);
     connect(m_lblVersion, &HLabel::clicked, this, &WndMain::on_lblVersion_clicked);
     //connect(this, &WndMain::showed, this, &WndMain::on_show);
     connect(m_net, &BjutNet::message, this, &WndMain::on_txtMsg_message);
@@ -358,6 +361,34 @@ void WndMain::on_lblClient2addr6_doubleClicked()
     if(index == 0) return;
     if(index > 0) addr = addr.left(index);
     QApplication::clipboard()->setText(addr);
+}
+
+void WndMain::on_btnOffcicalWeb_clicked()
+{
+    QDesktopServices::openUrl(QUrl("https://jfself.bjut.edu.cn/"));
+}
+
+void WndMain::on_btnRefreshBook_clicked()
+{
+    m_cmbListBook->clear();
+    auto &jfself = m_net->getWebJfself();
+    jfself.refreshBookService();
+    m_lblCurrentBook->setText("已预约:["+jfself.getCurrentBookService()+"]");
+    const auto &lst = jfself.getBookServiceList();
+    QStringList items;
+    for(const auto &l : lst)
+    {
+        items.append(l.second);
+    }
+    m_cmbListBook->addItems(items);
+}
+
+void WndMain::on_btnSubmitBook_clicked()
+{
+    auto &jfself = m_net->getWebJfself();
+    const auto &lst = jfself.getBookServiceList();
+    if(m_cmbListBook->currentIndex() >=0 && m_cmbListBook->currentIndex() < lst.size())
+        jfself.submitBookService(lst[m_cmbListBook->currentIndex()].first);
 }
 
 void WndMain::on_lblVersion_clicked()

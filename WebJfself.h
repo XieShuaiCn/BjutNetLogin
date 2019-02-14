@@ -4,6 +4,7 @@
 #include "common.h"
 #include "HttpClient.h"
 #include <QDateTime>
+#include <QPair>
 
 struct OnlineClientInfo{
     QString strID;
@@ -25,6 +26,10 @@ public:
     bool refreshAccount();
     //刷新在线列表
     bool refreshOnline();
+    //刷新套餐
+    bool refreshBookService();
+    //预约套餐
+    bool submitBookService(const QString &id);
     //下线某个设备
     bool toOffline(const QString &id);
     bool toOfflineAll();
@@ -36,6 +41,9 @@ public:
     PROPERTY_READ_CONST(QString, AccountName, m_strAccountName)
     PROPERTY_READ_CONST(QString, ServiceName, m_strService)
     PROPERTY_READ_CONST(QVector<OnlineClientInfo>, OnlineClient, m_lstOnline)
+    PROPERTY_READ_CONST(QString, CurrentBookService, m_strCurrentBookService)
+    const QVector<QPair<QString, QString>> &getBookServiceList()
+    {   return m_lstBookService;    }
 
     const QString &getAccount() const;
     void setAccount(const QString &account);
@@ -58,6 +66,8 @@ private:
     QString m_strAccountName;
     QString m_strService;
     QVector<OnlineClientInfo> m_lstOnline;
+    QVector<QPair<QString, QString>> m_lstBookService;
+    QString m_strCurrentBookService;
 };
 
 inline const QString &WebJfself::getAccount() const

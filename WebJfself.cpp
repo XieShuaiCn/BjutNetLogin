@@ -220,6 +220,82 @@ bool WebJfself::refreshOnline()
     return false;
 }
 
+//刷新套餐
+bool WebJfself::refreshBookService()
+{
+    m_lstBookService.clear();
+    m_strCurrentBookService.clear();
+    if(!checkLogin()){
+        login();
+        if(!checkLogin()) return false;
+    }
+    QString content;
+    int status = m_http.getUrlHtml(QUrl(QString("https://jfself.bjut.edu.cn/nav_servicedefaultbook")),
+                                   content);
+//    QFile f("nav_offline.0.html");
+//    f.open(QIODevice::ReadOnly|QIODevice::Text);
+//    content = QString(f.readAll());
+//    f.close();
+//    int status = 200;
+    if(status == 200 || status == 0)
+    {
+        int idx1 = content.indexOf("<form");
+        if (idx1 < 0) return false;
+        int idx2 = content.indexOf("</form", idx1);
+        if (idx2 <= idx1) return false;
+        QString table = content.mid(idx1, idx2-idx1);
+        int idx_name1= table.indexOf(QChar('['));
+        int idx_name2= table.indexOf(QChar(']'), idx_name1);
+        if(idx_name1 >= 0 && idx_name2 > idx_name1)
+        {
+            m_strCurrentBookService = table.mid(idx_name1+1, idx_name2-idx_name1-1);
+        }
+        int idx_body = table.indexOf("<tbody>");
+        if(idx_body > 0)
+        {
+            int idx_body2 = table.indexOf("</tbody>");
+            QString tbody = table.mid(idx_body+7, idx_body2-idx_body-7);
+            int i1 = 0, i2 = 0;
+            while(true){
+                i1 = tbody.indexOf("<tr>", i2, Qt::CaseInsensitive);
+                i2 = tbody.indexOf("</tr>", i1, Qt::CaseInsensitive);
+                if(i1<0) break;
+                int idx_srvvalue = tbody.indexOf("value=\"", i1, Qt::CaseInsensitive);
+                int idx_srvname = tbody.indexOf("\">", idx_srvvalue, Qt::CaseInsensitive);
+                int idx_srvname2 = tbody.indexOf("</", idx_srvname, Qt::CaseInsensitive);
+                m_lstBookService.append({tbody.mid(idx_srvvalue+7, idx_srvname-idx_srvvalue-7).trimmed(),
+                                        tbody.mid(idx_srvname+2, idx_srvname2-idx_srvname-2).trimmed()});
+            }
+        }
+        return true;
+    }
+    return false;
+}
+
+//预约套餐
+bool WebJfself::submitBookService(const QString &id)
+{
+    if(!checkLogin()){
+        login();
+        if(!checkLogin()) return false;
+    }
+    QString content;
+    QMap<QString, QString> arg;
+    arg.insert("serid", id);
+    int status = m_http.postUrlHtml(QUrl(QString("https://jfself.bjut.edu.cn/selfservicebookAction")),
+                                   arg, content);
+//    QFile f("nav_offline.0.html");
+//    f.open(QIODevice::ReadOnly|QIODevice::Text);
+//    content = QString(f.readAll());
+//    f.close();
+//    int status = 200;
+    if(status == 200 || status == 0)
+    {
+        return true;
+    }
+    return false;
+}
+
 bool WebJfself::toOffline(const QString &id)
 {
     if(!checkLogin()){

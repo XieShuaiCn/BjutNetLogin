@@ -49,6 +49,9 @@ public slots:
     void on_lblClient1addr6_doubleClicked();
     void on_lblClient2addr4_doubleClicked();
     void on_lblClient2addr6_doubleClicked();
+    void on_btnOffcicalWeb_clicked();
+    void on_btnRefreshBook_clicked();
+    void on_btnSubmitBook_clicked();
     void on_lblVersion_clicked();
     void on_txtMsg_message(const QDateTime& time, const QString& info);
     void on_account_status(bool login, int time, int flow, int fee);
@@ -99,6 +102,11 @@ private:
     QPushButton *m_btnOffline2;
 
     QFrame *m_frmOperation;
+    QPushButton *m_btnOfficalWeb;
+    QLabel *m_lblCurrentBook;
+    QComboBox *m_cmbListBook;
+    QPushButton *m_btnSubmitBook;
+    QPushButton *m_btnRefreshBook;
 
     QTextEdit *m_txtMsg;
     HLabel *m_lblVersion;
