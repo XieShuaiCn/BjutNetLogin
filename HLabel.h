@@ -13,8 +13,10 @@ public:
     explicit HLabel(const QString &text, QWidget *parent=Q_NULLPTR, Qt::WindowFlags f=Qt::WindowFlags());
 
 signals:
-    void clicked();
+    void clicked(Qt::MouseButton button = Qt::MouseButton::NoButton);
+    void doubleClicked(Qt::MouseButton button = Qt::MouseButton::NoButton);
 protected:
+    void mouseDoubleClickEvent(QMouseEvent *event);
     void mousePressEvent(QMouseEvent *event);
 };
 

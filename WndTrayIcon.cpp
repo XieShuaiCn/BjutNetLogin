@@ -37,11 +37,11 @@ WndTrayIcon::WndTrayIcon(QApplication *app,QObject *parent):
     m_tmClick.setSingleShot(true);
 
     connect(this, &WndTrayIcon::activated, this, &WndTrayIcon::on_actived);
-    connect(m_actMenuShowMain, &QAction::triggered, this, &WndTrayIcon::on_actMenuShowMain_trigger);
-    connect(m_actMenuLogin, &QAction::triggered, this, &WndTrayIcon::on_actMenuLogin_trigger);
-    connect(m_actMenuLogout, &QAction::triggered, this, &WndTrayIcon::on_actMenuLogout_trigger);
-    connect(m_actMenuSetting, QAction::triggered, this, &WndTrayIcon::on_actMenuSetting_trigger);
-    connect(m_actMenuQuit, &QAction::triggered, this, &WndTrayIcon::on_actMenuQuit_trigger);
+    connect(m_actMenuShowMain, &QAction::triggered, this, &WndTrayIcon::cmdShowMainWnd);
+    connect(m_actMenuLogin, &QAction::triggered, this, &WndTrayIcon::cmdLoginLgn);
+    connect(m_actMenuLogout, &QAction::triggered, this, &WndTrayIcon::cmdLogoutLgn);
+    connect(m_actMenuSetting, QAction::triggered, this, &WndTrayIcon::cmdShowSettingWnd);
+    connect(m_actMenuQuit, &QAction::triggered, this, &WndTrayIcon::cmdExitApp);
     connect(&m_tmClick, &QTimer::timeout, this, &WndTrayIcon::on_clicked);
 
     m_net = new BjutNet();
@@ -91,25 +91,25 @@ void WndTrayIcon::on_clicked()
     m_tmClick.stop();
 }
 
-void WndTrayIcon::on_actMenuShowMain_trigger()
+void WndTrayIcon::cmdShowMainWnd()
 {
     if (!m_wndMain)
     {
-        m_wndMain = new WndMain(m_app, this);
+        m_wndMain = new WndMain(this);
     }
     m_wndMain->show();
 }
 
-void WndTrayIcon::on_actMenuSetting_trigger()
+void WndTrayIcon::cmdShowSettingWnd()
 {
     if(!m_wndSetting)
     {
-        m_wndSetting = new WndSetting();
+        m_wndSetting = new WndSetting(this);
     }
     m_wndSetting->show();
 }
 
-void WndTrayIcon::on_actMenuQuit_trigger()
+void WndTrayIcon::cmdExitApp()
 {
     if(m_app != Q_NULLPTR)
     {
@@ -117,13 +117,13 @@ void WndTrayIcon::on_actMenuQuit_trigger()
     }
 }
 
-void WndTrayIcon::on_actMenuLogin_trigger()
+void WndTrayIcon::cmdLoginLgn()
 {
     m_net->stop_monitor();
     m_net->start_monitor();
 }
 
-void WndTrayIcon::on_actMenuLogout_trigger()
+void WndTrayIcon::cmdLogoutLgn()
 {
     m_net->stop_monitor();
     m_net->getWebLgn().logout();
@@ -136,13 +136,13 @@ void WndTrayIcon::on_actived(QSystemTrayIcon::ActivationReason reason)
         m_menuTray->exec();
         break;
     case QSystemTrayIcon::DoubleClick:
-        on_actMenuShowMain_trigger();
+        cmdShowMainWnd();
         break;
     case QSystemTrayIcon::Trigger:
         if(m_tmClick.isActive())
         {//双击
             m_tmClick.stop();
-            on_actMenuShowMain_trigger();
+            cmdShowMainWnd();
         }
         else
         {//单击计时器
@@ -158,9 +158,12 @@ void WndTrayIcon::reciveMessage(const QString &msg)
 {
     const char *m = msg.toStdString().data();
     if(0==strcmp(m, "ShowMainWnd")){
-        on_actMenuShowMain_trigger();
+        cmdShowMainWnd();
     }
-    else if(0==strcmp(m, "Exit")){
-        on_actMenuQuit_trigger();
+    else if(0 == strcmp(m, "ShowSettingWnd")) {
+        cmdShowSettingWnd();
+    }
+    else if(0==strcmp(m, "ExitApp")){
+        cmdExitApp();
     }
 }

@@ -23,15 +23,15 @@ Q_SIGNALS:
 
 public slots:
     void reciveMessage(const QString &msg);
+    void cmdExitApp();
+    void cmdShowMainWnd();
+    void cmdShowSettingWnd();
+    void cmdLoginLgn();
+    void cmdLogoutLgn();
 
 protected slots:
     void on_actived(QSystemTrayIcon::ActivationReason reason);
     void on_clicked();
-    void on_actMenuQuit_trigger();
-    void on_actMenuShowMain_trigger();
-    void on_actMenuSetting_trigger();
-    void on_actMenuLogin_trigger();
-    void on_actMenuLogout_trigger();
     void socket_newConnection();
 
     QTimer m_tmClick;

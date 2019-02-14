@@ -1,27 +1,30 @@
 #include "WndMain.h"
 #include "WndTrayIcon.h"
 #include "BjutNet.h"
-#include <QtGui/QPainter>
-#include <QtGui/QShowEvent>
-#include <QtGui/QDesktopServices>
-#include <QtWidgets/QMenu>
-#include <QtWidgets/QMessageBox>
-#include <QtWidgets/QAction>
-#include <QtWidgets/QApplication>
-#include <QtWidgets/QButtonGroup>
-#include <QtWidgets/QComboBox>
-#include <QtWidgets/QHeaderView>
-#include <QtWidgets/QLCDNumber>
-#include <QtWidgets/QLabel>
-#include <QtWidgets/QLineEdit>
-#include <QtWidgets/QPushButton>
-#include <QtWidgets/QTextEdit>
-#include <QtWidgets/QWidget>
+#include <QPainter>
+#include <QShowEvent>
+#include <QDesktopServices>
+#include <QMenu>
+#include <QMessageBox>
+#include <QAction>
+#include <QApplication>
+#include <QButtonGroup>
+#include <QComboBox>
+#include <QHeaderView>
+#include <QLCDNumber>
+#include <QLabel>
+#include <QLineEdit>
+#include <QPushButton>
+#include <QTextEdit>
+#include <QWidget>
+#include <QProgressDialog>
+#include <QHostInfo>
+#include <QHostAddress>
+#include <QClipboard>
 
-WndMain::WndMain(QApplication *app, WndTrayIcon *tray, QWidget *parent) :
+WndMain::WndMain(WndTrayIcon *tray, QWidget *parent) :
     QWidget(parent),
     m_bNeedUpdate(false),
-    m_app(app),
     m_tray(tray)
 {
     tray->setMainWindow(this);
@@ -32,19 +35,17 @@ WndMain::WndMain(QApplication *app, WndTrayIcon *tray, QWidget *parent) :
 
     //关联信号
     connect(m_btnDetail, &QPushButton::clicked, this, &WndMain::on_btnDetail_clicked);
-    connect(m_btnApply, &QPushButton::clicked, this, &WndMain::on_btnApply_clicked);
     connect(m_btnLogout, &QPushButton::clicked, this, &WndMain::on_btnLogout_clicked);
     connect(m_btnLogin, &QPushButton::clicked, this, &WndMain::on_btnLogin_clicked);
     connect(m_btnRefresh, &QPushButton::clicked, this, &WndMain::on_btnRefresh_clicked);
     connect(m_btnOffline1, &QPushButton::clicked, this, &WndMain::on_btnOffline1_clicked);
     connect(m_btnOffline2, &QPushButton::clicked, this, &WndMain::on_btnOffline2_clicked);
+    connect(m_lblClent1_addr4, &HLabel::doubleClicked, this, &WndMain::on_lblClient1addr4_doubleClicked);
+    connect(m_lblClent1_addr6, &HLabel::doubleClicked, this, &WndMain::on_lblClient1addr6_doubleClicked);
+    connect(m_lblClent2_addr4, &HLabel::doubleClicked, this, &WndMain::on_lblClient2addr4_doubleClicked);
+    connect(m_lblClent2_addr6, &HLabel::doubleClicked, this, &WndMain::on_lblClient2addr6_doubleClicked);
     connect(m_lblVersion, &HLabel::clicked, this, &WndMain::on_lblVersion_clicked);
     //connect(this, &WndMain::showed, this, &WndMain::on_show);
-    connect(this, &WndMain::closeEvent, this, &WndMain::on_close);
-    connect(this, &WndMain::paintEvent, this, &WndMain::on_paint);
-    connect(this, &WndMain::resizeEvent, this, &WndMain::on_resize);
-    connect(m_actMenuApplyOnly, &QAction::triggered, this, &WndMain::on_actApplyOnly_triggered);
-    connect(m_actMenuApplyLogin, &QAction::triggered, this, &WndMain::on_actApplyLogin_triggered);
     connect(m_net, &BjutNet::message, this, &WndMain::on_txtMsg_message);
     connect(&m_net->getWebLgn(), &WebLgn::status_update, this, &WndMain::on_account_status);
     connect(&m_net->getWebJfself(), &WebJfself::online_status_update, this, &WndMain::on_online_status);
@@ -59,9 +60,6 @@ WndMain::WndMain(QApplication *app, WndTrayIcon *tray, QWidget *parent) :
 
 WndMain::~WndMain()
 {
-    delete m_actMenuApplyLogin;
-    delete m_actMenuApplyOnly;
-    delete m_menuBtnApply;
 }
 
 void WndMain::show()
@@ -72,7 +70,7 @@ void WndMain::show()
     on_show();
 }
 
-void WndMain::on_close(QCloseEvent *event)
+void WndMain::closeEvent(QCloseEvent *event)
 {
     //QMessageBox::StandardButton ret = QMessageBox::information(this, "关闭", "是否关闭？", QMessageBox::Cancel, QMessageBox::Ok);
     //event->setAccepted(ret == QMessageBox::Ok);
@@ -81,9 +79,9 @@ void WndMain::on_close(QCloseEvent *event)
     this->hide();
 }
 
-void WndMain::on_paint(QPaintEvent *event)
+void WndMain::paintEvent(QPaintEvent *event)
 {
-    Q_UNUSED(event);
+    QWidget::paintEvent(event);
     QPainter painter(this);
     // 设置反锯齿
     painter.setRenderHint(QPainter::Antialiasing);
@@ -139,7 +137,7 @@ void WndMain::on_paint(QPaintEvent *event)
     painter.setPen(QColor(180,180,180));
     //painter.drawRoundedRect(m_frmGraph->geometry(), 5, 5);
     //painter.drawRoundedRect(m_frmInfo->geometry(), 5, 5);
-    painter.drawRoundedRect(m_frmAccount->geometry(), 5, 5);
+    painter.drawRoundedRect(m_frmOperation->geometry(), 5, 5);
     painter.drawRoundedRect(m_frmOnline->geometry(), 5, 5);
 }
 
@@ -147,7 +145,8 @@ void WndMain:: on_show()
 {
     WebLgn &lgn = m_net->getWebLgn();
     WebJfself &jfself = m_net->getWebJfself();
-
+    jfself.refreshAccount();
+    jfself.refreshOnline();
     if(jfself.getTotalFlow() > 0){
         m_lblFlowUsed->setText(QString("已用：%1 %").arg(100 * lgn.getFlow() / jfself.getTotalFlow() / 1024));
     }
@@ -155,16 +154,14 @@ void WndMain:: on_show()
          m_lblFlowUsed->setText(QString("已用：-- %"));
     }
     if(jfself.getServiceName().size()){
-    m_lblService->setText(jfself.getServiceName());
+        m_lblService->setText(jfself.getServiceName());
     }
     else{
         m_lblService->setText(QString("未检测到套餐"));
     }
-
-    m_editAccount->setText(lgn.getAccount());
-    m_cmbType->setCurrentIndex(int(lgn.getLoginType())-1);
     //更新页面显示的流量状态
-    on_account_status(lgn.getTime() > 0, lgn.getTime(), lgn.getFlow(), lgn.getFee());
+    lgn.checkLoginStatus();
+    //on_account_status(lgn.getTime() > 0, lgn.getTime(), lgn.getFlow(), lgn.getFee());
     m_updater.checkUpdate();
     if(m_updater.needUpdate()){
         m_bNeedUpdate = true;
@@ -203,6 +200,7 @@ void WndMain::on_account_status(bool login, int time, int flow, int fee)
         m_lcdNumTime->display(float(time) / 60);
         m_lblTimeUnit->setText(timeUnit[1]);
     }
+    QString strFlowTip;
     int flowUnitIndex = 0;
     float fflow = flow;
     while(fflow > 1024)
@@ -213,45 +211,67 @@ void WndMain::on_account_status(bool login, int time, int flow, int fee)
     m_lcdNumFlow->display(fflow);
     m_lblFlowUnit->setText(flowUnit[flowUnitIndex]);
     m_lcdNumFee->display(float(fee) / 100);
+    strFlowTip.append(QString("流量状态：已用%1%2").arg(fflow).arg(flowUnit[flowUnitIndex]));
     int totalFlow = m_net->getWebJfself().getTotalFlow();//MB
     if(totalFlow > 0){
         m_lblFlowUsed->setText(QString("已用：%1 %").arg(100 * flow / totalFlow / 1024));
+        fflow = totalFlow-flow/1024;
+        flowUnitIndex = 1;
+        while(fflow > 1024)
+        {
+            fflow /= 1024;
+            ++flowUnitIndex;
+        }
+        strFlowTip.append(QString("，剩余%1%2").arg(fflow).arg(flowUnit[flowUnitIndex]));
+        m_frmFlowGraph->setToolTip(strFlowTip);
         this->update();
     }
 }
 
 void WndMain::on_online_status(const QVector<OnlineClientInfo> &info)
 {
+    QHostInfo host_info = QHostInfo::fromName(QHostInfo::localHostName());
+    QList<QHostAddress> addrs = host_info.addresses();
     if(info.size() > 0)
     {
         const auto &c = info.first();
-        m_lblClent1_ip4->setText("IPv4:"+c.strIPv4);
-        m_lblClent1_ip6->setText("IPv6:"+c.strIPv6);
+        m_lblClent1_addr4->setText(c.strIPv4);
+        m_lblClent1_addr6->setText(c.strIPv6);
+        if((c.strIPv4.size() && addrs.contains(QHostAddress(c.strIPv4)))
+            || (c.strIPv6.size() && addrs.contains(QHostAddress(c.strIPv6))))
+        {
+            m_lblClent1_addr4->setText(m_lblClent1_addr4->text()+"(本机)");
+        }
         m_strOnlineID[0] = c.strID;
-        m_lblClent1_ip4->setVisible(true);
-        m_lblClent1_ip6->setVisible(true);
+        m_lblClent1_addr4->setVisible(true);
+        m_lblClent1_addr6->setVisible(true);
         m_btnOffline1->setVisible(true);
     }
     else {
         m_strOnlineID[0].clear();
-        m_lblClent1_ip4->setVisible(false);
-        m_lblClent1_ip6->setVisible(false);
+        m_lblClent1_addr4->setVisible(false);
+        m_lblClent1_addr6->setVisible(false);
         m_btnOffline1->setVisible(false);
     }
     if(info.size() > 1)
     {
         const auto &c = info.last();
-        m_lblClent2_ip4->setText("IPv4:"+c.strIPv4);
-        m_lblClent2_ip6->setText("IPv6:"+c.strIPv6);
+        m_lblClent2_addr4->setText(c.strIPv4);
+        m_lblClent2_addr6->setText(c.strIPv6);
+        if((c.strIPv4.size() && addrs.contains(QHostAddress(c.strIPv4)))
+            || (c.strIPv6.size() && addrs.contains(QHostAddress(c.strIPv6))))
+        {
+            m_lblClent2_addr4->setText(m_lblClent1_addr4->text()+"(本机)");
+        }
         m_strOnlineID[1] = c.strID;
-        m_lblClent2_ip4->setVisible(true);
-        m_lblClent2_ip6->setVisible(true);
+        m_lblClent2_addr4->setVisible(true);
+        m_lblClent2_addr6->setVisible(true);
         m_btnOffline2->setVisible(true);
     }
     else {
         m_strOnlineID[1].clear();
-        m_lblClent2_ip4->setVisible(false);
-        m_lblClent2_ip6->setVisible(false);
+        m_lblClent2_addr4->setVisible(false);
+        m_lblClent2_addr6->setVisible(false);
         m_btnOffline2->setVisible(false);
     }
 }
@@ -262,7 +282,7 @@ void WndMain::on_txtMsg_message(const QDateTime& time, const QString& info)
 }
 
 
-void WndMain::on_resize(QResizeEvent *event)
+void WndMain::resizeEvent(QResizeEvent *event)
 {
     Q_UNUSED(event);
     m_lblVersion->setGeometry(QRect(10, this->height()-25, 250, 20));
@@ -291,37 +311,6 @@ void WndMain::on_btnDetail_clicked()
     }
 }
 
-void WndMain::on_btnApply_clicked()
-{
-    WebLgn &lgn = m_net->getWebLgn();
-    m_net->setAccount(m_editAccount->text());
-    m_net->setPassword(m_editPassword->text());
-    m_net->setLoginType(m_cmbType->currentIndex() + 1);
-    if(m_net->saveAccount())
-    {
-        on_txtMsg_message(QDateTime::currentDateTime(), "账号信息保存成功");
-    }
-    if(m_bApplyLogin)
-    {
-        if(!m_net->stop_monitor())
-        {
-            on_txtMsg_message(QDateTime::currentDateTime(), "在线保持停止失败");
-        }
-        if(lgn.logout())
-        {
-            on_txtMsg_message(QDateTime::currentDateTime(), "账号下线失败");
-        }
-        if(lgn.login())
-        {
-            on_txtMsg_message(QDateTime::currentDateTime(), "账号上线失败");
-        }
-        if(!m_net->start_monitor())
-        {
-            on_txtMsg_message(QDateTime::currentDateTime(), "在线保持启动失败");
-        }
-    }
-}
-
 void WndMain::on_btnLogout_clicked()
 {
     m_net->stop_monitor();
@@ -332,6 +321,43 @@ void WndMain::on_btnLogin_clicked()
 {
     m_net->stop_monitor();
     m_net->start_monitor();
+}
+
+void WndMain::on_lblClient1addr4_doubleClicked()
+{
+    QString addr = m_lblClent1_addr4->text();
+    if(addr.size()==0) return;
+    int index = addr.indexOf(QChar('('));
+    if(index == 0) return;
+    if(index > 0) addr = addr.left(index);
+    QApplication::clipboard()->setText(addr);
+}
+void WndMain::on_lblClient1addr6_doubleClicked()
+{
+    QString addr = m_lblClent1_addr6->text();
+    if(addr.size()==0) return;
+    int index = addr.indexOf(QChar('('));
+    if(index == 0) return;
+    if(index > 0) addr = addr.left(index);
+    QApplication::clipboard()->setText(addr);
+}
+void WndMain::on_lblClient2addr4_doubleClicked()
+{
+    QString addr = m_lblClent2_addr4->text();
+    if(addr.size()==0) return;
+    int index = addr.indexOf(QChar('('));
+    if(index == 0) return;
+    if(index > 0) addr = addr.left(index);
+    QApplication::clipboard()->setText(addr);
+}
+void WndMain::on_lblClient2addr6_doubleClicked()
+{
+    QString addr = m_lblClent2_addr6->text();
+    if(addr.size()==0) return;
+    int index = addr.indexOf(QChar('('));
+    if(index == 0) return;
+    if(index > 0) addr = addr.left(index);
+    QApplication::clipboard()->setText(addr);
 }
 
 void WndMain::on_lblVersion_clicked()
@@ -355,9 +381,9 @@ void WndMain::on_lblVersion_clicked()
             {
                 mb.setWindowTitle("更新成功");
                 mb.setText("正在启动....");
-                if(m_app)
+                if(m_tray)
                 {
-                    m_app->quit();
+                    m_tray->cmdExitApp();
                 }
             } else {
                 mb.setWindowTitle("更新失败");
@@ -377,14 +403,6 @@ void WndMain::on_lblVersion_clicked()
     }
 }
 
-void WndMain::on_actApplyOnly_triggered(bool checked)
-{
-    Q_UNUSED(checked);
-    m_bApplyLogin = false;
-    m_actMenuApplyOnly->setChecked(true);
-    m_actMenuApplyLogin->setChecked(false);
-}
-
 void WndMain::on_btnOffline1_clicked()
 {
     if(m_strOnlineID[0].size())
@@ -397,14 +415,6 @@ void WndMain::on_btnOffline2_clicked()
     if(m_strOnlineID[1].size())
         m_net->getWebJfself().toOffline(m_strOnlineID[1]);
     m_net->getWebJfself().refreshOnline();
-}
-
-void WndMain::on_actApplyLogin_triggered(bool checked)
-{
-    Q_UNUSED(checked);
-    m_bApplyLogin = true;
-    m_actMenuApplyOnly->setChecked(false);
-    m_actMenuApplyLogin->setChecked(true);
 }
 
 void WndMain::downloadProgress(qint64 bytesReceived, qint64 bytesTotal)

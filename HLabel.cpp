@@ -12,5 +12,11 @@ HLabel::HLabel(const QString &text, QWidget *parent, Qt::WindowFlags f):
 void HLabel::mousePressEvent(QMouseEvent *event)
 {
     QLabel::mousePressEvent(event);
-    emit clicked();
+    emit clicked(event->button());
+}
+
+void HLabel::mouseDoubleClickEvent(QMouseEvent *event)
+{
+    QLabel::mouseDoubleClickEvent(event);
+    emit doubleClicked(event->button());
 }

@@ -46,7 +46,8 @@ SOURCES += \
     WebJfself.cpp \
     BjutNet.cpp \
     WndSetting.cpp \
-    WndSetting_ui.cpp
+    WndSetting_ui.cpp \
+    HPanel.cpp
 
 
 HEADERS += \
@@ -60,7 +61,8 @@ HEADERS += \
     WebLgn.h \
     BjutNet.h \
     WebJfself.h \
-    WndSetting.h
+    WndSetting.h \
+    HPanel.h
 
 DISTFILES += \
     C:/Users/XIESHUAI/.bjutnet/account.json \

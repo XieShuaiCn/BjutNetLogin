@@ -12,8 +12,8 @@ int main(int argc, char *argv[])
         return 0;
     }
 #ifdef QT_DEBUG
-    qDebug() << endl(QtSingleApplication::applicationDirPath())
-             << endl(QDir::currentPath());
+    qDebug() << QtSingleApplication::applicationDirPath() << endl
+             << QDir::currentPath() << endl;
 #endif
     QDir::setCurrent(app.applicationDirPath());
 
@@ -22,9 +22,9 @@ int main(int argc, char *argv[])
     if(argc > 1 && 0==strcmp(argv[1], "-tray")){   }
     else
     {
-        wti.reciveMessage("ShowMainWnd");
+        wti.cmdShowMainWnd();
     }
-
+    //wti.cmdShowSettingWnd();
     QObject::connect(&app, &QtSingleApplication::messageReceived, &wti, &WndTrayIcon::reciveMessage);
     return app.exec();
 }

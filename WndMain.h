@@ -5,7 +5,6 @@
 #include "Updater.h"
 #include "HLabel.h"
 #include "WebJfself.h"
-#include <QProgressDialog>
 
 class QAction;
 class QApplication;
@@ -22,6 +21,7 @@ class QMenu;
 class QShowEvent;
 class QCloseEvent;
 class QPaintEvent;
+class QProgressDialog;
 class BjutNet;
 class WndTrayIcon;
 
@@ -30,40 +30,40 @@ class WndMain : public QWidget
     Q_OBJECT
     friend class BjutNet;
 public:
-    WndMain(QApplication *app, WndTrayIcon *tray, QWidget *parent = 0);
+    WndMain(WndTrayIcon *tray, QWidget *parent = Q_NULLPTR);
     ~WndMain();
     void show();
 
 Q_SIGNALS:
     void showed();
-    void closeEvent(QCloseEvent *event);
-    void paintEvent(QPaintEvent *event);
-    void resizeEvent(QResizeEvent *event);
 public slots:
     void initUI();
     void on_show();
-    void on_close(QCloseEvent *event);
-    void on_paint(QPaintEvent *event);
-    void on_resize(QResizeEvent *event);
     void on_btnRefresh_clicked();
     void on_btnDetail_clicked();
-    void on_btnApply_clicked();
     void on_btnLogout_clicked();
     void on_btnLogin_clicked();
     void on_btnOffline1_clicked();
     void on_btnOffline2_clicked();
-    void on_actApplyLogin_triggered(bool checked = false);
-    void on_actApplyOnly_triggered(bool checked = false);
+    void on_lblClient1addr4_doubleClicked();
+    void on_lblClient1addr6_doubleClicked();
+    void on_lblClient2addr4_doubleClicked();
+    void on_lblClient2addr6_doubleClicked();
     void on_lblVersion_clicked();
     void on_txtMsg_message(const QDateTime& time, const QString& info);
     void on_account_status(bool login, int time, int flow, int fee);
     void on_online_status(const QVector<OnlineClientInfo> &info);
 protected slots:
     void downloadProgress(qint64 bytesReceived, qint64 bytesTotal);
+protected:
+    void closeEvent(QCloseEvent *event);
+    void paintEvent(QPaintEvent *event);
+    void resizeEvent(QResizeEvent *event);
 private:
     //界面所需变量
     QFrame *m_frmGraph;
     QRect m_rectFlowGraph;
+    QFrame *m_frmFlowGraph;
     QLabel *m_lblService;
     QLabel *m_lblFlowUsed;
     QLabel *m_lblStatus;
@@ -86,25 +86,19 @@ private:
     QPushButton *m_btnDetail;
 
     QFrame *m_frmOnline;
+    QLabel *m_lblCopyTip;
     QLabel *m_lblClent1_ip4;
     QLabel *m_lblClent1_ip6;
+    HLabel *m_lblClent1_addr4;
+    HLabel *m_lblClent1_addr6;
     QPushButton *m_btnOffline1;
     QLabel *m_lblClent2_ip4;
     QLabel *m_lblClent2_ip6;
+    HLabel *m_lblClent2_addr4;
+    HLabel *m_lblClent2_addr6;
     QPushButton *m_btnOffline2;
 
-    QFrame *m_frmAccount;
-    QLabel *m_lblAccount;
-    QLabel *m_lblPassword;
-    QLabel *m_lblType;
-    QLineEdit *m_editAccount;
-    QLineEdit *m_editPassword;
-    QComboBox *m_cmbType;
-    QPushButton *m_btnApply;
-    QPushButton *m_btnApplyMenu;
-    QMenu *m_menuBtnApply;
-    QAction *m_actMenuApplyOnly;
-    QAction *m_actMenuApplyLogin;
+    QFrame *m_frmOperation;
 
     QTextEdit *m_txtMsg;
     HLabel *m_lblVersion;
@@ -116,7 +110,6 @@ private:
     QString m_strOnlineID[2];
     Updater m_updater;
     QProgressDialog *m_dlgProgress;
-    QApplication *m_app;
     WndTrayIcon *m_tray;
     BjutNet *m_net;
 
