@@ -40,7 +40,7 @@ WndTrayIcon::WndTrayIcon(QApplication *app,QObject *parent):
     connect(m_actMenuShowMain, &QAction::triggered, this, &WndTrayIcon::cmdShowMainWnd);
     connect(m_actMenuLogin, &QAction::triggered, this, &WndTrayIcon::cmdLoginLgn);
     connect(m_actMenuLogout, &QAction::triggered, this, &WndTrayIcon::cmdLogoutLgn);
-    connect(m_actMenuSetting, QAction::triggered, this, &WndTrayIcon::cmdShowSettingWnd);
+    connect(m_actMenuSetting, &QAction::triggered, this, &WndTrayIcon::cmdShowSettingWnd);
     connect(m_actMenuQuit, &QAction::triggered, this, &WndTrayIcon::cmdExitApp);
     connect(&m_tmClick, &QTimer::timeout, this, &WndTrayIcon::on_clicked);
 
