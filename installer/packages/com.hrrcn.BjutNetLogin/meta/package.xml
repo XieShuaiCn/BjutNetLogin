@@ -2,8 +2,8 @@
 <Package>
     <DisplayName>主程序</DisplayName>
     <Description>网关登陆器，用于登陆校园网关。</Description>
-    <Version>3.0.0-13</Version>
-    <ReleaseDate>2019-01-26</ReleaseDate>
+    <Version>3.1.0-14</Version>
+    <ReleaseDate>2019-02-15</ReleaseDate>
     <Licenses>
         <License name="本软件使用协议" file="license.txt" />
         <License name="QT平台开源协议" file="license_qt.txt" />
