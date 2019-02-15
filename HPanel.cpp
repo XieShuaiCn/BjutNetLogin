@@ -8,7 +8,7 @@ HPanel::HPanel(QWidget* parent, Qt::WindowFlags f) :
     QFrame(parent, f),
     m_bShowText(false),
     m_bShowBorder(true),
-    m_dBorderWidth(1.),
+    m_dBorderWidth(2.),
     m_dBorderRound(5.),
     m_colorBorder(QColor::fromRgb(180,180,180))
 {
@@ -48,20 +48,25 @@ void HPanel::paintEvent(QPaintEvent *event)
             double height = this->height();
             double t_height_2 = 3+0.5*m_rectText.height();
             double t_width = m_rectText.width();
+            double left = 0.5*m_dBorderWidth;
+            double right = width-0.5*m_dBorderWidth;
+            double top = t_height_2;
+            double bottom = height-0.5*m_dBorderWidth;
 
-            painter.drawArc(QRectF(width-m_dBorderRound*2, t_height_2, m_dBorderRound*2, m_dBorderRound*2), 0.*16., 90.*16.);
-            painter.drawArc(QRectF(0., t_height_2, m_dBorderRound*2, m_dBorderRound*2), 90.*16., 90.*16.);
-            painter.drawArc(QRectF(0., height-m_dBorderRound*2-m_dBorderWidth, m_dBorderRound*2, m_dBorderRound*2), 180.*16., 90.*16.);
-            painter.drawArc(QRectF(width-m_dBorderRound*2-m_dBorderWidth, height-m_dBorderRound*2-m_dBorderWidth, m_dBorderRound*2, m_dBorderRound*2), 270.*16., 90.*16.);
+            painter.drawArc(QRectF(right-m_dBorderRound*2., t_height_2, m_dBorderRound*2., m_dBorderRound*2.), 0.*16., 90.*16.);
+            painter.drawArc(QRectF(left, top, m_dBorderRound*2., m_dBorderRound*2.), 90.*16., 90.*16.);
+            painter.drawArc(QRectF(left, bottom-m_dBorderRound*2., m_dBorderRound*2., m_dBorderRound*2), 180.*16., 90.*16.);
+            painter.drawArc(QRectF(right-m_dBorderRound*2., bottom-m_dBorderRound*2., m_dBorderRound*2., m_dBorderRound*2), 270.*16., 90.*16.);
 
-            painter.drawLine(QPointF(m_dBorderRound, t_height_2), QPointF(20., t_height_2));
-            painter.drawLine(QPointF(30.+t_width, t_height_2), QPointF(width-m_dBorderRound, t_height_2));
-            painter.drawLine(QPointF(width-m_dBorderWidth, t_height_2+m_dBorderRound), QPointF(width-m_dBorderWidth, height-m_dBorderRound));
-            painter.drawLine(QPointF(m_dBorderRound, height-m_dBorderWidth), QPointF(width-m_dBorderRound, height-m_dBorderWidth));
-            painter.drawLine(QPointF(0., t_height_2+m_dBorderRound), QPointF(0., height-m_dBorderRound));
+            painter.drawLine(QPointF(left+m_dBorderRound, top), QPointF(20., top));
+            painter.drawLine(QPointF(30.+t_width, top), QPointF(right-m_dBorderRound, top));
+            painter.drawLine(QPointF(right, top+m_dBorderRound), QPointF(right, bottom-m_dBorderRound));
+            painter.drawLine(QPointF(left+m_dBorderRound, bottom), QPointF(right-m_dBorderRound, bottom));
+            painter.drawLine(QPointF(left, top+m_dBorderRound), QPointF(left, bottom-m_dBorderRound));
         }
         else {
-            painter.drawRoundedRect(QRectF(0., 10., this->width()-m_dBorderWidth, this->height()-m_dBorderWidth-10.), m_dBorderRound, m_dBorderRound);
+            double left = 0.5*m_dBorderWidth;
+            painter.drawRoundedRect(QRectF(left, left, this->width()-m_dBorderWidth, this->height()-m_dBorderWidth), m_dBorderRound, m_dBorderRound);
         }
     }
 }
