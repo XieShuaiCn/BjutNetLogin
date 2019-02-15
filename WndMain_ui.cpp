@@ -15,14 +15,16 @@
 
 void WndMain::initUI()
 {
-    QFont font_s10;
-    font_s10.setPointSize(10);
-    QFont font_s11;
-    font_s11.setPointSize(11.5);
-    QFont font_s12;
-    font_s12.setPointSize(12);
-    QFont font_s13;
-    font_s13.setPointSize(13);
+    QFont font_s100;
+    font_s100.setPointSize(10);
+    QFont font_s105;
+    font_s105.setPointSizeF(10.5);
+    QFont font_s115;
+    font_s115.setPointSizeF(11.5);
+    QFont font_s120;
+    font_s120.setPointSize(12);
+    QFont font_s130;
+    font_s130.setPointSize(13);
     //窗口
     this->setObjectName(QStringLiteral("WndMain"));
     this->setWindowIcon(QIcon(":/icon/logo.ico"));
@@ -37,20 +39,20 @@ void WndMain::initUI()
     m_frmGraph->setFrameShadow(QFrame::Plain);
     m_lblFlowUsed = new QLabel(m_frmGraph);
     m_lblFlowUsed->setGeometry(QRect(0, 20, 100, 20));
-    m_lblFlowUsed->setFont(font_s12);
+    m_lblFlowUsed->setFont(font_s120);
     m_lblService = new QLabel(m_frmGraph);
     m_lblService->setGeometry(QRect(0, 0, 150, 20));
-    m_lblService->setFont(font_s11);
+    m_lblService->setFont(font_s115);
     m_lblStatus = new QLabel(m_frmGraph);
     m_lblStatus->setGeometry(QRect(0, 40, 50, 20));
-    m_lblStatus->setFont(font_s12);
+    m_lblStatus->setFont(font_s120);
     m_lblStatusFlag = new QLabel(m_frmGraph);
     m_lblStatusFlag->setGeometry(QRect(35, 40, 20, 20));
-    m_lblStatusFlag->setFont(font_s12);
+    m_lblStatusFlag->setFont(font_s120);
     m_btnRefresh = new QPushButton(m_frmGraph);
     m_btnRefresh->setGeometry(QRect(55, 40, 20, 20));
     m_btnRefresh->setFlat(true);
-    m_btnRefresh->setFont(font_s12);
+    m_btnRefresh->setFont(font_s120);
     m_frmFlowGraph = new QFrame(m_frmGraph);
     m_frmFlowGraph->setGeometry(QRect(110,0,160,160));
     m_frmFlowGraph->setFrameShape(QFrame::NoFrame);
@@ -64,13 +66,13 @@ void WndMain::initUI()
     //状态label
     m_lblInfoTime = new QLabel(m_frmInfo);
     m_lblInfoTime->setGeometry(QRect(20, 10, 100, 20));
-    m_lblInfoTime->setFont(font_s13);
+    m_lblInfoTime->setFont(font_s130);
     m_lblInfoFlow = new QLabel(m_frmInfo);
     m_lblInfoFlow->setGeometry(QRect(20, 50, 100, 20));
-    m_lblInfoFlow->setFont(font_s13);
+    m_lblInfoFlow->setFont(font_s130);
     m_lblInfoFee = new QLabel(m_frmInfo);
     m_lblInfoFee->setGeometry(QRect(20, 90, 100, 20));
-    m_lblInfoFee->setFont(font_s13);
+    m_lblInfoFee->setFont(font_s130);
     //状态value
     m_lcdNumTime = new QLCDNumber(m_frmInfo);
     m_lcdNumTime->setGeometry(QRect(110, 10, 81, 23));
@@ -93,13 +95,13 @@ void WndMain::initUI()
     //状态unit
     m_lblTimeUnit = new QLabel(m_frmInfo);
     m_lblTimeUnit->setGeometry(QRect(200, 10, 40, 20));
-    m_lblTimeUnit->setFont(font_s13);
+    m_lblTimeUnit->setFont(font_s130);
     m_lblFlowUnit = new QLabel(m_frmInfo);
     m_lblFlowUnit->setGeometry(QRect(200, 50, 40, 20));
-    m_lblFlowUnit->setFont(font_s13);
+    m_lblFlowUnit->setFont(font_s130);
     m_lblFeeUnit = new QLabel(m_frmInfo);
     m_lblFeeUnit->setGeometry(QRect(200, 90, 40, 20));
-    m_lblFeeUnit->setFont(font_s13);
+    m_lblFeeUnit->setFont(font_s130);
     //上线按钮
     m_btnLogin = new QPushButton(this);
     m_btnLogin->setGeometry(QRect(310, 140, 85, 30));
@@ -117,37 +119,37 @@ void WndMain::initUI()
     m_frmOnline->setFrameShadow(QFrame::Plain);
     m_lblClent1_ip4 = new QLabel(m_frmOnline);
     m_lblClent1_ip4->setGeometry(QRect(10, 10, 40, 20));
-    m_lblClent1_ip4->setFont(font_s12);
+    m_lblClent1_ip4->setFont(font_s120);
     m_lblClent1_ip6 = new QLabel(m_frmOnline);
     m_lblClent1_ip6->setGeometry(QRect(10, 40, 40, 20));
-    m_lblClent1_ip6->setFont(font_s12);
+    m_lblClent1_ip6->setFont(font_s120);
     m_lblClent1_addr4 = new HLabel(m_frmOnline);
     m_lblClent1_addr4->setGeometry(QRect(55, 10, 200, 20));
-    m_lblClent1_addr4->setFont(font_s12);
+    m_lblClent1_addr4->setFont(font_s120);
     m_lblClent1_addr6 = new HLabel(m_frmOnline);
     m_lblClent1_addr6->setGeometry(QRect(55, 40, m_frmOnline->width()-20, 20));
-    m_lblClent1_addr6->setFont(font_s11);
+    m_lblClent1_addr6->setFont(font_s115);
     m_btnOffline1 = new QPushButton(m_frmOnline);
     m_btnOffline1->setGeometry(QRect(m_frmOnline->width()-90, 8, 80, 25));
     m_btnOffline1->setVisible(false);
     m_lblClent2_ip4 = new QLabel(m_frmOnline);
     m_lblClent2_ip4->setGeometry(QRect(10, 70, 40, 20));
-    m_lblClent2_ip4->setFont(font_s12);
+    m_lblClent2_ip4->setFont(font_s120);
     m_lblClent2_ip6 = new QLabel(m_frmOnline);
     m_lblClent2_ip6->setGeometry(QRect(10, 100, 40, 20));
-    m_lblClent2_ip6->setFont(font_s12);
+    m_lblClent2_ip6->setFont(font_s120);
     m_lblClent2_addr4 = new HLabel(m_frmOnline);
     m_lblClent2_addr4->setGeometry(QRect(55, 70, 200, 20));
-    m_lblClent2_addr4->setFont(font_s12);
+    m_lblClent2_addr4->setFont(font_s120);
     m_lblClent2_addr6 = new HLabel(m_frmOnline);
     m_lblClent2_addr6->setGeometry(QRect(55, 100, m_frmOnline->width()-20, 20));
-    m_lblClent2_addr6->setFont(font_s11);
+    m_lblClent2_addr6->setFont(font_s115);
     m_btnOffline2 = new QPushButton(m_frmOnline);
     m_btnOffline2->setGeometry(QRect(m_frmOnline->width()-90, 68, 80, 25));
     m_btnOffline2->setVisible(false);
     m_lblCopyTip = new QLabel(m_frmOnline);
     m_lblCopyTip->setGeometry(QRect(m_btnOffline1->pos().x()-80, 8, 80, 25));
-    m_lblCopyTip->setFont(font_s12);
+    m_lblCopyTip->setFont(font_s120);
     m_lblCopyTip->setStyleSheet("color:#808080;");
 
     //
@@ -157,19 +159,19 @@ void WndMain::initUI()
     m_frmOperation->setFrameShadow(QFrame::Plain);
     m_btnOfficalWeb = new QPushButton(m_frmOperation);
     m_btnOfficalWeb->setGeometry(QRect(40, 10, 80, 25));
-    m_btnOfficalWeb->setFont(font_s11);
+    m_btnOfficalWeb->setFont(font_s105);
     m_lblCurrentBook = new QLabel(m_frmOperation);
-    m_lblCurrentBook->setGeometry(QRect(10, 40, 160, 25));
-    m_lblCurrentBook->setFont(font_s10);
+    m_lblCurrentBook->setGeometry(QRect(10, 40, 160, 20));
+    m_lblCurrentBook->setFont(font_s100);
     m_cmbListBook = new QComboBox(m_frmOperation);
-    m_cmbListBook->setGeometry(QRect(10, 70, 150, 25));
-    m_cmbListBook->setFont(font_s11);
+    m_cmbListBook->setGeometry(QRect(10, 65, 150, 25));
+    m_cmbListBook->setFont(font_s100);
     m_btnRefreshBook = new QPushButton(m_frmOperation);
-    m_btnRefreshBook->setGeometry(QRect(10, 100, 70, 25));
-    m_btnRefreshBook->setFont(font_s11);
+    m_btnRefreshBook->setGeometry(QRect(10, 97, 73, 25));
+    m_btnRefreshBook->setFont(font_s100);
     m_btnSubmitBook = new QPushButton(m_frmOperation);
-    m_btnSubmitBook->setGeometry(QRect(90, 100, 70, 25));
-    m_btnSubmitBook->setFont(font_s11);
+    m_btnSubmitBook->setGeometry(QRect(87, 97, 73, 25));
+    m_btnSubmitBook->setFont(font_s100);
 
     //消息日志框
     m_txtMsg = new QTextEdit(this);
@@ -178,7 +180,7 @@ void WndMain::initUI()
     //版本号
     m_lblVersion = new HLabel(this);
     m_lblVersion->setGeometry(QRect(10, this->height()-25, 250, 20));
-    m_lblVersion->setFont(font_s10);
+    m_lblVersion->setFont(font_s100);
 
     //设置各控件的文本内容
     this->setWindowTitle(QString("北工大网关登录器"));

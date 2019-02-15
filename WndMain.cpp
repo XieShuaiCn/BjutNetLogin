@@ -264,7 +264,7 @@ void WndMain::on_online_status(const QVector<OnlineClientInfo> &info)
         if((c.strIPv4.size() && addrs.contains(QHostAddress(c.strIPv4)))
             || (c.strIPv6.size() && addrs.contains(QHostAddress(c.strIPv6))))
         {
-            m_lblClent2_addr4->setText(m_lblClent1_addr4->text()+"(本机)");
+            m_lblClent2_addr4->setText(m_lblClent2_addr4->text()+"(本机)");
         }
         m_strOnlineID[1] = c.strID;
         m_lblClent2_addr4->setVisible(true);

@@ -11,6 +11,7 @@ class HPanel : public QFrame
     Q_OBJECT
 public:
     explicit HPanel(QWidget* parent = Q_NULLPTR, Qt::WindowFlags f = Qt::WindowFlags());
+    PROPERTY_READ_WRITE(bool, ShowBorder, m_bShowBorder)
     PROPERTY_READ_WRITE(double, BorderWidth, m_dBorderWidth)
     PROPERTY_READ_WRITE(double, BorderRound, m_dBorderRound)
     PROPERTY_READ_WRITE(QColor, BorderColor, m_colorBorder)
@@ -23,6 +24,7 @@ protected:
 private:
     QLabel *m_lblText;
     bool m_bShowText;
+    bool m_bShowBorder;
     QRect m_rectText;
     double m_dBorderWidth;
     double m_dBorderRound;
