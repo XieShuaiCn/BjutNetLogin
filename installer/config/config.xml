@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Installer>
     <Name>北工大网关登陆器</Name>
-    <Version>3.1.0</Version>
+    <Version>3.1.1</Version>
     <Title>北工大网关登陆器</Title>
     <Publisher>飓科工作室</Publisher>
     <ProductUrl>http://bnl.hrrcn.com</ProductUrl>

@@ -33,6 +33,7 @@ protected:
     QString m_strOnlineFileURL;
     HttpClient m_http;
     const QString m_strHostName = "http://bnl.hrrcn.com/";
+    const QString m_strOssHostName = "http://bjutnetlogin.oss-cn-beijing.aliyuncs.com/";
 };
 
 #endif // UPDATER_H

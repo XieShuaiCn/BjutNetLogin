@@ -142,7 +142,7 @@ bool Updater::downloadNewPackage()
                 }
             }
             QFileInfo fi(jo["file"].toString());
-            return 200 == m_http.downloadFile(QUrl(m_strHostName + jo["file"].toString()), QByteArray(), tempDir + fi.fileName(), false)
+            return 200 == m_http.downloadFile(QUrl(m_strOssHostName + jo["file"].toString()), QByteArray(), tempDir + fi.fileName(), false)
                     && QProcess::startDetached(tempDir + fi.fileName(), QStringList());
         }
         else {
