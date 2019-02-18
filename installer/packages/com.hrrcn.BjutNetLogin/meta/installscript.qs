@@ -41,22 +41,22 @@ Component.prototype.createOperations = function()
   component.createOperations();
 
     if (systemInfo.productType === "windows") {
-        component.addOperation("CreateShortcut", "@TargetDir@/BjutNetLogin.exe", "@StartMenuDir@/北工大网关登录器.lnk",
-              "workingDirectory=@TargetDir@", "iconPath=@TargetDir@/logo.ico",
+        component.addOperation("CreateShortcut", "@TargetDir@\\BjutNetLogin.exe", "@StartMenuDir@\\北工大网关登录器.lnk",
+              "workingDirectory=@TargetDir@", "iconPath=@TargetDir@\\logo.ico",
               "description=运行北工大网关登录器");
-        component.addOperation("CreateShortcut", "@TargetDir@/uninstall.exe", "@StartMenuDir@/卸载.lnk",
-                "workingDirectory=@TargetDir@", "iconPath=@TargetDir@/uninstall.exe",
+        component.addOperation("CreateShortcut", "@TargetDir@\\uninstall.exe", "@StartMenuDir@\\卸载.lnk",
+                "workingDirectory=@TargetDir@", "iconPath=@TargetDir@\\uninstall.exe",
                 "description=卸载北工大网关登录器");
-        component.addOperation("CreateShortcut", "@TargetDir@/BjutNetLogin.exe", "@DesktopDir@/北工大网关登录器.lnk",
-              "workingDirectory=@TargetDir@", "iconPath=@TargetDir@/logo.ico",
+        component.addOperation("CreateShortcut", "@TargetDir@\\BjutNetLogin.exe", "@DesktopDir@\\北工大网关登录器.lnk",
+              "workingDirectory=@TargetDir@", "iconPath=@TargetDir@\\logo.ico",
               "description=运行北工大网关登录器");
-        //component.addOperation("CreateShortcut", "@TargetDir@/BjutNetLogin.exe", "@UserStartMenuProgramsPath@/Startup/BjutNetLogin.lnk",
-        //      "workingDirectory=@TargetDir@", "iconPath=@TargetDir@/BjutNetLogin.exe",
+        //component.addOperation("CreateShortcut", "@TargetDir@\BjutNetLogin.exe", "@UserStartMenuProgramsPath@/Startup/BjutNetLogin.lnk",
+        //      "workingDirectory=@TargetDir@", "iconPath=@TargetDir@\BjutNetLogin.exe",
         //      "description=运行北工大网关登录器");
         //component.addOperation("Settings", "HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Run",
         //    "set", "BjutNetLogin", "@TargetDir@/BjutNetLogin.exe");
         component.addOperation("GlobalConfig", "HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Run",
-            "BjutNetLogin", "@TargetDir@/BjutNetLogin.exe");
+            "BjutNetLogin", "@TargetDir@\\BjutNetLogin.exe");
     }
     else{
         component.addOperation("CreateDesktopEntry", "xieshuai-BjutNetLogin.desktop",
