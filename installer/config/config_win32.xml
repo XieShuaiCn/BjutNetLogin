@@ -8,24 +8,17 @@
     <InstallerWindowIcon>installericon</InstallerWindowIcon>
     <InstallerApplicationIcon>installericon</InstallerApplicationIcon>
     <Logo>logo.ico</Logo>
-    <MaintenanceToolName>maintenance</MaintenanceToolName>
+    <MaintenanceToolName>maintain</MaintenanceToolName>
     <AllowNonAsciiCharacters>true</AllowNonAsciiCharacters>
     <StartMenuDir>北工大网关登录器</StartMenuDir>
     <TargetDir>@ApplicationsDir@/BjutNetLogin</TargetDir>
-	<RemoteRepositories>
+    <RemoteRepositories>
         <Repository>
             <Url>http://bnl.hrrcn.com/repo/windows</Url>
             <Enabled>1</Enabled>
             <Username></Username>
             <Password></Password>
             <DisplayName>Windows repository</DisplayName>
-        </Repository>
-		<Repository>
-            <Url>http://bnl.hrrcn.com/repo/linux64</Url>
-            <Enabled>1</Enabled>
-            <Username></Username>
-            <Password></Password>
-            <DisplayName>Linux x64 repository</DisplayName>
         </Repository>
     </RemoteRepositories>
 </Installer>

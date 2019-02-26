@@ -45,7 +45,7 @@ Component.prototype.createOperations = function()
               "workingDirectory=@TargetDir@", "iconPath=@TargetDir@\\logo.ico",
               "description=运行北工大网关登录器");
         component.addOperation("CreateShortcut", "@TargetDir@\\uninstall.exe", "@StartMenuDir@\\卸载.lnk",
-                "workingDirectory=@TargetDir@", "iconPath=@TargetDir@\\uninstall.exe",
+                "workingDirectory=@TargetDir@", "iconPath=@TargetDir@\\maintain.exe",
                 "description=卸载北工大网关登录器");
         component.addOperation("CreateShortcut", "@TargetDir@\\BjutNetLogin.exe", "@DesktopDir@\\北工大网关登录器.lnk",
               "workingDirectory=@TargetDir@", "iconPath=@TargetDir@\\logo.ico",
@@ -59,7 +59,8 @@ Component.prototype.createOperations = function()
             "BjutNetLogin", "@TargetDir@\\BjutNetLogin.exe");
     }
     else{
+	//component.addOperation("Execute", "sh", "@TargetDir@/install_desktop.sh");
         component.addOperation("CreateDesktopEntry", "xieshuai-BjutNetLogin.desktop",
-              "Version=@Version@ Type=Application Name=BjutNetLogin Icon=@TargetDir@/logo.ico Exec=@TargetDir@/BjutNetLogin.sh Comment=北京工业大学网关登录器。账号登陆，在线保持。 Categories=Applications;Tools; Terminal=false StartupWMClass=xieshuai-BjutNetLogin");
+              "Version=1.0 Type=Application Name=BjutNetLogin Icon=@TargetDir@/logo256.png Exec=@TargetDir@/BjutNetLogin.sh Comment=北京工业大学网关登录器。账号登陆，在线保持。 Categories=Applications;Tools; Terminal=false StartupWMClass=xieshuai-BjutNetLogin");
     }
 }
