@@ -21,6 +21,7 @@ public:
     bool downloadNewPackage();
     bool doDownload(const QString &online_path, const QString &local_path);
     bool doInstall(const QString &local_path);
+    bool runMaintainTool();
 signals:
     void downloadProgress(qint64 bytesReceived, qint64 bytesTotal);
 protected:

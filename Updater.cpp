@@ -169,3 +169,8 @@ bool Updater::doInstall(const QString &local_path)
     proc->start(local_path);
     return proc->waitForStarted();
 }
+
+bool Updater::runMaintainTool()
+{
+    return QProcess::startDetached("maintain");
+}

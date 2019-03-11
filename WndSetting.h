@@ -27,6 +27,7 @@ public slots:
     void initUI();
     void show();
     void on_chkAutoRun_clicked(bool checked);
+    void on_chkDebug_clicked(bool checked);
     void on_btnApply_clicked();
     void on_btnApplyLogin_clicked();
 
@@ -34,6 +35,7 @@ private:
     WndTrayIcon *m_tray;
     HPanel *m_frmBasic;
     QCheckBox *m_chkAutoRun;
+    QCheckBox *m_chkAppDebug;
     QLabel *m_lblAutoRun;
 
     QFrame *m_frmAccount;

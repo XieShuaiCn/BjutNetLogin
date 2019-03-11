@@ -53,6 +53,11 @@ void WndSetting::on_chkAutoRun_clicked(bool checked)
 #endif
 }
 
+void WndSetting::on_chkDebug_clicked(bool checked)
+{
+    g_bAppDebug = checked;
+}
+
 void WndSetting::on_btnApply_clicked()
 {
     if(m_tray)

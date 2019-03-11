@@ -23,4 +23,6 @@
     PROPERTY_READ(type, name, var) \
     PROPERTY_WRITE(type, name, var)
 
+extern bool g_bAppDebug;
+
 #endif // COMMON_H

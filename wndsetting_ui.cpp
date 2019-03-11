@@ -17,11 +17,11 @@ void WndSetting::initUI()
 
     this->setObjectName(QStringLiteral("WndSetting"));
     //设置固定窗口大小
-    this->setFixedSize(300, 300);
+    this->setFixedSize(300, 330);
     this->setFont(font_s11);
 
     m_frmBasic = new HPanel(this);
-    m_frmBasic->setGeometry(QRect(10, 10, 280, 60));
+    m_frmBasic->setGeometry(QRect(10, 10, 280, 90));
     m_frmBasic->setFrameShape(QFrame::NoFrame);
     m_frmBasic->setFrameShadow(QFrame::Plain);
     m_chkAutoRun = new QCheckBox(m_frmBasic);
@@ -29,10 +29,13 @@ void WndSetting::initUI()
 #ifndef Q_OS_WIN
     m_chkAutoRun->setEnabled(false);
 #endif
+    m_chkAppDebug = new QCheckBox(m_frmBasic);
+    m_chkAppDebug->setGeometry(QRect(20, 55, 250, 20));
 
     //账号信息
     m_frmAccount = new HPanel(this);
-    m_frmAccount->setGeometry(QRect(10, 80, 280, 180));
+    m_frmAccount->setGeometry(QRect(10, 10+m_frmBasic->pos().y()+m_frmBasic->size().height(),
+                                    280, 185));
     m_frmAccount->setFrameShape(QFrame::NoFrame);
     m_frmAccount->setFrameShadow(QFrame::Plain);
     m_lblAccount = new QLabel(m_frmAccount);
@@ -72,6 +75,7 @@ void WndSetting::initUI()
     this->setWindowTitle(QStringLiteral("设置"));
     m_frmBasic->setText(QStringLiteral("基本"));
     m_chkAutoRun->setText(QStringLiteral("开机自动运行(仅Windows可用)"));
+    m_chkAppDebug->setText(QStringLiteral("调试模式(请勿开启)"));
     m_lblAccount->setText(QString("账号："));
     m_lblPassword->setText(QString("密码："));
     m_lblType->setText(QString("类型："));

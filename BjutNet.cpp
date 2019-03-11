@@ -177,7 +177,7 @@ void BjutNet::checkLgn()
     else//校园网未登录
     {
         if(lastOfflined < lastOnlined
-                && lastOnlined.toSecsSinceEpoch() - lastOnlined.toSecsSinceEpoch() < 75)//75sec
+                && lastOnlined.toSecsSinceEpoch() - lastOnlined.toSecsSinceEpoch() < 300)//5mins
         {
             ++nOfflined;
         }
