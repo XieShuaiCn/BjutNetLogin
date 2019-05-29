@@ -217,7 +217,7 @@ void WndMain::on_account_status(bool login, int time, int flow, int fee)
     strFlowTip.append(QString("流量状态：已用%1%2").arg(fflow).arg(flowUnit[flowUnitIndex]));
     int totalFlow = m_net->getWebJfself().getTotalFlow();//MB
     if(totalFlow > 0){
-        m_lblFlowUsed->setText(QString("已用：%1 %").arg(100 * flow / totalFlow / 1024));
+        m_lblFlowUsed->setText(QString("已用：%1 %").arg(int(100.0 * flow / totalFlow / 1024)));
         fflow = totalFlow-flow/1024;
         flowUnitIndex = 1;
         while(fflow > 1024)

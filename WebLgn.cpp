@@ -338,6 +338,24 @@ bool WebLgn::checkLoginStatus(LoginType type)
     if(AutoLoginType == type)
     {
         type = this->m_loginType;
+        if (g_bAppDebug)
+        {
+            QString msg("Login Type: ");
+            switch (type) {
+            case IPv4:
+                msg.append("IPv4");
+                break;
+            case IPv6:
+                msg.append("IPv6");
+                break;
+            case IPv4_6:
+                msg.append("IPv4 & IPv6");
+                break;
+            default:
+                break;
+            }
+            emit message(QDateTime::currentDateTime(), msg);
+        }
     }
 
     //分析网页
@@ -351,6 +369,10 @@ bool WebLgn::checkLoginStatus(LoginType type)
         else
         {
             m_netType = UnknownNet;
+            if (g_bAppDebug)
+            {
+                emit message(QDateTime::currentDateTime(), "Check IPv4:UnKnown Net");
+            }
             return false;
         }
         int pos = content.indexOf(regTime);
@@ -361,6 +383,10 @@ bool WebLgn::checkLoginStatus(LoginType type)
             emit status_update(false, m_nTime, m_nFlow, m_nFee);
             return false;
         }
+        else if (g_bAppDebug)
+        {
+            emit message(QDateTime::currentDateTime(), "Check IPv4: Time OK");
+        }
         pos = content.indexOf(regFlow);
         if(pos < 0)
         {
@@ -368,6 +394,10 @@ bool WebLgn::checkLoginStatus(LoginType type)
             m_isOnline = false;
             emit status_update(false, m_nTime, m_nFlow, m_nFee);
             return false;
+        }
+        else if (g_bAppDebug)
+        {
+            emit message(QDateTime::currentDateTime(), "Check IPv4: Flow OK");
         }
         pos = content.indexOf(regFee);
         if(pos < 0)
@@ -377,6 +407,10 @@ bool WebLgn::checkLoginStatus(LoginType type)
             emit status_update(false, m_nTime, m_nFlow, m_nFee);
             return false;
         }
+        else if (g_bAppDebug)
+        {
+            emit message(QDateTime::currentDateTime(), "Check IPv4: Fee OK");
+        }
         if(200 == m_http.getUrlHtml(url6, content))
         {
             m_netType = BJUT_LAN;
@@ -384,6 +418,10 @@ bool WebLgn::checkLoginStatus(LoginType type)
         else
         {
             m_netType = UnknownNet;
+            if (g_bAppDebug)
+            {
+                emit message(QDateTime::currentDateTime(), "Check IPv6: UnKnown Net");
+            }
             return false;
         }
         pos = content.indexOf(regTime);
@@ -393,6 +431,10 @@ bool WebLgn::checkLoginStatus(LoginType type)
             m_isOnline = false;
             emit status_update(false, m_nTime, m_nFlow, m_nFee);
             return false;
+        }
+        else if (g_bAppDebug)
+        {
+            emit message(QDateTime::currentDateTime(), "Check IPv6: Time OK");
         }
     }
     else
@@ -421,6 +463,10 @@ bool WebLgn::checkLoginStatus(LoginType type)
             emit status_update(false, m_nTime, m_nFlow, m_nFee);
             return false;
         }
+        else if (g_bAppDebug)
+        {
+            emit message(QDateTime::currentDateTime(), "Check: Time OK");
+        }
         pos = content.indexOf(regFlow);
         if(pos < 0)
         {
@@ -429,6 +475,10 @@ bool WebLgn::checkLoginStatus(LoginType type)
             m_isOnline = false;
             emit status_update(false, m_nTime, m_nFlow, m_nFee);
             return false;
+        }
+        else if (g_bAppDebug)
+        {
+            emit message(QDateTime::currentDateTime(), "Check: Flow OK");
         }
         pos = content.indexOf(regFee);
         if(pos < 0)
@@ -439,6 +489,10 @@ bool WebLgn::checkLoginStatus(LoginType type)
             emit status_update(false, m_nTime, m_nFlow, m_nFee);
             return false;
         }
+        else if (g_bAppDebug)
+        {
+            emit message(QDateTime::currentDateTime(), "Check: Fee OK");
+        }
     }
     QString html_time = regTime.cap(1);
     QString html_flow = regFlow.cap(1);
@@ -446,11 +500,13 @@ bool WebLgn::checkLoginStatus(LoginType type)
     m_nTime = html_time.toInt();
     m_nFlow = html_flow.toInt();
     m_nFee = html_fee.toInt() / 100;
-    QString msg;
-    msg.sprintf("已用时间：%.3f小时，已用流量：%.3fMB，剩余金额：%.2f元\n",
-                float(m_nTime) / 60, float(m_nFlow) / 1024, float(m_nFee) / 100);
-    m_isOnline = true;
-    emit message(QDateTime::currentDateTime(), msg);
+    if (g_bAppDebug || !m_isOnline){
+        m_isOnline = true;
+        QString msg;
+        msg.sprintf("已用时间：%.3f小时，已用流量：%.3fMB，剩余金额：%.2f元\n",
+                    float(m_nTime) / 60, float(m_nFlow) / 1024, float(m_nFee) / 100);
+        emit message(QDateTime::currentDateTime(), msg);
+    }
     emit status_update(true, m_nTime, m_nFlow, m_nFee);
 
     return true;
