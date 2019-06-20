@@ -1,4 +1,5 @@
 #include "Updater.h"
+#include <QApplication>
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QFile>
@@ -15,10 +16,13 @@
 
 QString RandString(int length)
 {
+    qsrand(QTime::currentTime().msec()
+           +QTime::currentTime().second()*1000
+           +QTime::currentTime().minute()*60000);
     const QString set("0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ");
     QString result;
     for(int i = 0; i < length; ++i) {
-        result.append(set[rand() % 36]);
+        result.append(set[qrand() % 36]);
     }
     return result;
 }
@@ -110,10 +114,12 @@ bool Updater::downloadNewPackage()
     //{"success":true,"version":"3.0.0","platform":"Windows","file":"offline\/BjutNetLogin_3.0.0_Win32.exe"}
     QString content;
     int ret = m_http.getUrlHtml(QUrl(QString(m_strHostName + "online/download.php?ver=%1&os="
-#ifdef WIN32
+#if defined(Q_OS_WIN)
                           "Windows"
-#elif LINUX
+#elif defined(Q_OS_LINUX)
                           "Linux64"
+#else
+                          "Any"
 #endif
                           ).arg(m_nNewVersion)), content);
     if(ret != 200){
@@ -128,22 +134,50 @@ bool Updater::downloadNewPackage()
             if(m_strOnlineFileURL.isEmpty() || m_strOnlineFileURL.startsWith('#')){
                 return false;
             }
+            QFileInfo fi(m_strOnlineFileURL);
             //生成temp目录
-            QString tempDir;
+            QString tempFile;
             for(int i =0; i < 3; ++i)
             {
                 QString rs = RandString(6);
-                if(QDir::temp().mkdir("BjutNetLogin_" + rs + ".tmp")) {
-                    tempDir = QDir::tempPath() + "/BjutNetLogin_" + rs + ".tmp/";
-                    break;
+                QString tmpName = QDir::temp().absoluteFilePath("BjutNetLogin_" + rs + ".tmp");
+                QDir tmpDir(tmpName);
+                QFile tmpFile(tmpDir.absoluteFilePath(fi.fileName()));
+                if(!tmpFile.exists()) {
+                    if(!tmpDir.exists()){
+                        tmpDir.mkpath(tmpName);
+                    }
+                    if(tmpDir.exists()){
+                        tempFile = tmpDir.absoluteFilePath(fi.fileName());
+                        break;
+                    }
+                    else{
+                        return false;
+                    }
+                }
+                else{
+                    if(tmpFile.remove()){
+                        tempFile = tmpDir.absoluteFilePath(fi.fileName());
+                        break;
+                    }
+                    else{
+                        return false;
+                    }
                 }
                 if(i == 2){
                     return false;
                 }
             }
-            QFileInfo fi(jo["file"].toString());
-            return 200 == m_http.downloadFile(QUrl(m_strOssHostName + jo["file"].toString()), QByteArray(), tempDir + fi.fileName(), false)
-                    && QProcess::startDetached(tempDir + fi.fileName(), QStringList());
+            ret = m_http.downloadFile(QUrl(m_strOnlineFileURL), QByteArray(), tempFile, false);
+#ifdef QT_DEBUG
+            bool suc =
+#endif
+                    QFile(tempFile).setPermissions(QFile::Permission(0x7755));
+
+#ifdef QT_DEBUG
+            if (!suc) qDebug() << "Change permission faild." << endl;
+#endif
+            return 200 == ret && QProcess::startDetached(tempFile, QStringList());
         }
         else {
             return false;
@@ -172,5 +206,5 @@ bool Updater::doInstall(const QString &local_path)
 
 bool Updater::runMaintainTool()
 {
-    return QProcess::startDetached("maintain");
+    return QProcess::startDetached(QDir(QApplication::applicationDirPath()).absoluteFilePath("maintain"));
 }

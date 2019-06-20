@@ -402,8 +402,32 @@ void WndMain::on_lblVersion_clicked()
         mb.setText(msg);
         mb.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
         if(QMessageBox::Yes == mb.exec()) {
-            m_updater.runMaintainTool();
-            m_tray->cmdExitApp();
+            if(m_updater.runMaintainTool()){
+                m_tray->cmdExitApp();
+            }
+            else{
+                m_dlgProgress = new QProgressDialog("正在下载....", "无法取消", 0, 101, this);
+                m_dlgProgress->setWindowModality(Qt::WindowModal);
+                m_dlgProgress->setCancelButton(nullptr);
+                m_dlgProgress->show();
+                connect(&m_updater, &Updater::downloadProgress, this, &WndMain::downloadProgress);
+                if(m_updater.downloadNewPackage())
+                {
+                   mb.setWindowTitle("更新成功");
+                   mb.setText("正在启动....");
+                   if(m_tray)
+                   {
+                       m_tray->cmdExitApp();
+                   }
+                } else {
+                   mb.setWindowTitle("更新失败");
+                   mb.setText("软件更新失败，请稍候重试。");
+                }
+                disconnect(&m_updater, nullptr, nullptr, nullptr);
+                mb.setStandardButtons(QMessageBox::Ok);
+                mb.exec();
+                m_dlgProgress->close();
+            }
         }
     } else {
         mb.setWindowTitle("已是最新版本");

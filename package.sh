@@ -1,9 +1,9 @@
 #!/bin/sh  
   
-exe="BjutNetLogin" #发布的程序名称  
-des="../Linux64/BjutNetLogin" #你的路径  
+exe="BjutNetLogin" #发布的程序名称 
+des="../Linux64/" #你的路径  
 
-qthome="/opt/Qt5.9.5/5.9.5/gcc_64"
+qthome="${HOME}/.Qt5.9.6/5.9.6/gcc74_64"
 
 cd $des
 

@@ -1,4 +1,4 @@
-export PATH=/opt/Qt/QtIFW-3.0.6/bin:$PATH
+export PATH=/home/xieshuai/.Qt/QtIFW-3.0.6/bin:$PATH
 echo "Update online repository>>>>>>>>>>>>>>>>>>>>>>>>>>"
 repogen -v --update-new-components -p packages ../../repo/linux64
 echo "Create offline installer>>>>>>>>>>>>>>>>>>>>>>>>>>"
