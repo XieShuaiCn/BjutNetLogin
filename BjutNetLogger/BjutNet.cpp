@@ -91,6 +91,11 @@ bool BjutNet::loadAccount(const QString path)
         }
         else{
             emit message(QDateTime::currentDateTime(), jp_err.errorString());
+            if(g_bAppDebug)
+            {
+                WriteDebugInfo("Fail", QString("Load account json:") + f.fileName());
+                WriteDebugInfo(jp_err.errorString(), false);
+            }
             return false;
         }
     }

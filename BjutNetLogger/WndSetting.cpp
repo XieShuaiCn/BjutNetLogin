@@ -50,6 +50,8 @@ void WndSetting::on_chkAutoRun_clicked(bool checked)
         autoRun.remove("BjutNetLogin");
     }
     m_chkAutoRun->setChecked(autoRun.contains("BjutNetLogin"));
+#else
+    UNUSED(checked);
 #endif
 }
 

@@ -24,5 +24,16 @@
     PROPERTY_WRITE(type, name, var)
 
 extern bool g_bAppDebug;
+extern QString g_strAppTempPath;
+
+QString RandString(int length);
+
+void InitDebugFile(const QString &name);
+
+void WriteDebugInfo(const QString &content, bool with_time = true, bool end_line = true);
+
+void WriteDebugInfo(const QString &status, const QString &content, bool with_time = true, bool end_line = true);
+
+void ReleaseDebugFile();
 
 #endif // COMMON_H

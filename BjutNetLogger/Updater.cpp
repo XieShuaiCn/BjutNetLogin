@@ -14,19 +14,6 @@
 #include <QtNetwork/QNetworkReply>
 
 
-QString RandString(int length)
-{
-    qsrand(QTime::currentTime().msec()
-           +QTime::currentTime().second()*1000
-           +QTime::currentTime().minute()*60000);
-    const QString set("0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ");
-    QString result;
-    for(int i = 0; i < length; ++i) {
-        result.append(set[qrand() % 36]);
-    }
-    return result;
-}
-
 Updater::Updater(QObject *parent) : QObject(parent),
     m_nNewVersion(0), m_nOldVersion(0),
     m_strNewVersion("0.0.0"), m_strOldVersion("0.0.0")
@@ -136,38 +123,13 @@ bool Updater::downloadNewPackage()
             }
             QFileInfo fi(m_strOnlineFileURL);
             //生成temp目录
-            QString tempFile;
-            for(int i =0; i < 3; ++i)
+            QString tempFile = QDir(g_strAppTempPath).absoluteFilePath(fi.fileName());
+            QFile fileTemp(tempFile);
+            if(fileTemp.exists())
             {
-                QString rs = RandString(6);
-                QString tmpName = QDir::temp().absoluteFilePath("BjutNetLogin_" + rs + ".tmp");
-                QDir tmpDir(tmpName);
-                QFile tmpFile(tmpDir.absoluteFilePath(fi.fileName()));
-                if(!tmpFile.exists()) {
-                    if(!tmpDir.exists()){
-                        tmpDir.mkpath(tmpName);
-                    }
-                    if(tmpDir.exists()){
-                        tempFile = tmpDir.absoluteFilePath(fi.fileName());
-                        break;
-                    }
-                    else{
-                        return false;
-                    }
-                }
-                else{
-                    if(tmpFile.remove()){
-                        tempFile = tmpDir.absoluteFilePath(fi.fileName());
-                        break;
-                    }
-                    else{
-                        return false;
-                    }
-                }
-                if(i == 2){
-                    return false;
-                }
+                fileTemp.remove();
             }
+            fileTemp.close();
             ret = m_http.downloadFile(QUrl(m_strOnlineFileURL), QByteArray(), tempFile, false);
 #ifdef QT_DEBUG
             bool suc =
@@ -177,7 +139,7 @@ bool Updater::downloadNewPackage()
 #ifdef QT_DEBUG
             if (!suc) qDebug() << "Change permission faild." << endl;
 #endif
-            return 200 == ret && QProcess::startDetached(tempFile, QStringList());
+            return 200 == ret && doInstall(tempFile);
         }
         else {
             return false;
@@ -199,9 +161,7 @@ bool Updater::doDownload(const QString & online_path, const QString & local_path
 
 bool Updater::doInstall(const QString &local_path)
 {
-    QProcess *proc = new QProcess(this);
-    proc->start(local_path);
-    return proc->waitForStarted();
+    return QProcess::startDetached(local_path);
 }
 
 bool Updater::runMaintainTool()
