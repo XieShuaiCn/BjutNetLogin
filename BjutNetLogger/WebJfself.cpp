@@ -26,7 +26,12 @@ bool WebJfself::login()
         {
             QRegExp regCheckCode("var checkcode=\"(\\d{4})\";", Qt::CaseInsensitive);
             if (content.indexOf(regCheckCode) <= 0) {
-                    return false;
+                if(g_bAppDebug)
+                {
+                    WriteDebugInfo(DEBUG_FAIL, QString("Can't find jfself code."));
+                    WriteDebugInfo(content.replace('\r', ' ').replace('\n', ' '));
+                }
+                return false;
             }
             QString strCheckCode = regCheckCode.cap(1);
             QMap<QString, QString> arg;
@@ -43,18 +48,35 @@ bool WebJfself::login()
                     return true;
                 }
                 else {
-                    emit message(QDateTime::currentDateTime(), "Can not find \"info_title\"");
+                    if(g_bAppDebug)
+                    {
+                        WriteDebugInfo(DEBUG_FAIL, QString("Can't find keywork 'info_title'."));
+                        WriteDebugInfo(content.replace('\r', ' ').replace('\n', ' '));
+                    }
+                    emit message(QDateTime::currentDateTime(), "服务器数据解析失败!");
                 }
             }
             else {
+                if(g_bAppDebug)
+                {
+                    WriteDebugInfo(DEBUG_FAIL, QString("jfself login return %1.").arg(status));
+                }
                 emit message(QDateTime::currentDateTime(), "用户自助系统登录失败!");
             }
         }
         else {
+            if(g_bAppDebug)
+            {
+                WriteDebugInfo(DEBUG_FAIL, QString("jfself code return %1.").arg(status));
+            }
             emit message(QDateTime::currentDateTime(), "验证码获取失败!");
         }
     }
     else {
+        if(g_bAppDebug)
+        {
+            WriteDebugInfo(DEBUG_FAIL, QString("jfself native return %1.").arg(status));
+        }
         emit message(QDateTime::currentDateTime(), "用户自助登录信息获取失败!");
     }
     return false;
@@ -102,7 +124,7 @@ bool WebJfself::refreshAccount()
                     if(jo.contains("outmessage"))
                     {
                         emit message(QDateTime::currentDateTime(),
-                                     "Refresh account:"+(jo.value("outmessage").toString()));
+                                     "账户信息:"+(jo.value("outmessage").toString()));
                     }
                     emit message(QDateTime::currentDateTime(),
                                   "刷新账户信息失败");
@@ -143,6 +165,11 @@ bool WebJfself::refreshAccount()
         else {
             emit message(QDateTime::currentDateTime(),
                          "解析账户信息失败:"+jp_err.errorString());
+            if(g_bAppDebug)
+            {
+                WriteDebugInfo(DEBUG_FAIL, QString("refresh_account"));
+                WriteDebugInfo(content.replace('\r', ' ').replace('\n', ' '));
+            }
 #ifdef QT_DEBUG
             QFile f("refresh_account.json");
             f.open(QIODevice::WriteOnly | QIODevice::Text);
@@ -150,6 +177,10 @@ bool WebJfself::refreshAccount()
             f.close();
 #endif
         }
+    }
+    else if(g_bAppDebug)
+    {
+        WriteDebugInfo(DEBUG_FAIL, QString("refresh account return %1").arg(status));
     }
     return false;
 }
@@ -209,6 +240,10 @@ bool WebJfself::refreshOnline()
         else {
             emit message(QDateTime::currentDateTime(),
                          QString("解析在线信息失败:tbody(%1,%2)").arg(i1).arg(i2));
+            if(g_bAppDebug)
+            {
+                WriteDebugInfo(DEBUG_FAIL, QString("refresh online devices."));
+            }
 #ifdef QT_DEBUG
             QFile f("nav_offline.html");
             f.open(QIODevice::WriteOnly | QIODevice::Text);
@@ -334,6 +369,11 @@ bool WebJfself::toOffline(const QString &id)
                     return true;
                 }
             }
+        }
+        if(g_bAppDebug)
+        {
+            WriteDebugInfo(DEBUG_FAIL, QString("offline device"));
+            WriteDebugInfo(content.replace('\r', ' ').replace('\n', ' '));
         }
     }
     return false;

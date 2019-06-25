@@ -131,14 +131,19 @@ bool Updater::downloadNewPackage()
             }
             fileTemp.close();
             ret = m_http.downloadFile(QUrl(m_strOnlineFileURL), QByteArray(), tempFile, false);
-#ifdef QT_DEBUG
-            bool suc =
-#endif
-                    QFile(tempFile).setPermissions(QFile::Permission(0x7755));
+            if(g_bAppDebug)
+            {
+                WriteDebugInfo(ret==200 ? DEBUG_SUCCESS : DEBUG_FAIL, QString("Download file.(%1)").arg(tempFile));
+            }
 
+            bool suc = QFile(tempFile).setPermissions(QFile::Permission(0x7755));
 #ifdef QT_DEBUG
             if (!suc) qDebug() << "Change permission faild." << endl;
 #endif
+            if(g_bAppDebug)
+            {
+                WriteDebugInfo(DEBUG_FAIL, QString("Change permission faild.(%1)").arg(tempFile));
+            }
             return 200 == ret && doInstall(tempFile);
         }
         else {

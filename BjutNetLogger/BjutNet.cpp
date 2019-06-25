@@ -93,7 +93,7 @@ bool BjutNet::loadAccount(const QString path)
             emit message(QDateTime::currentDateTime(), jp_err.errorString());
             if(g_bAppDebug)
             {
-                WriteDebugInfo("Fail", QString("Load account json:") + f.fileName());
+                WriteDebugInfo(DEBUG_FAIL, QString("Load account json:") + f.fileName());
                 WriteDebugInfo(jp_err.errorString(), false);
             }
             return false;
@@ -145,7 +145,15 @@ bool BjutNet::saveAccount(const QString path)
         QByteArray data= jd.toJson(QJsonDocument::Compact);
         f.write(data);
         f.close();
+        if(g_bAppDebug)
+        {
+            WriteDebugInfo(DEBUG_SUCCESS, QString("Save account json:") + f.fileName());
+        }
         return true;
+    }
+    else if(g_bAppDebug)
+    {
+        WriteDebugInfo(DEBUG_FAIL, QString("Save account json:") + f.fileName());
     }
     return false;
 }

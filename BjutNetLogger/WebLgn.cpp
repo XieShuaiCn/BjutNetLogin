@@ -68,6 +68,10 @@ bool WebLgn::loginOnLAN(LoginType type)
         type = this->m_loginType;
     }
 
+    if(g_bAppDebug)
+    {
+        WriteDebugInfo(DEBUG_INFO, QString("Check login type %1."));
+    }
     switch (type) {
     case AutoLoginType:
     case IPv4:
@@ -344,12 +348,15 @@ bool WebLgn::checkLoginStatus(LoginType type)
             switch (type) {
             case IPv4:
                 msg.append("IPv4");
+                WriteDebugInfo(DEBUG_INFO, QString("Check login type IPv4."));
                 break;
             case IPv6:
                 msg.append("IPv6");
+                WriteDebugInfo(DEBUG_INFO, QString("Check login type IPv6."));
                 break;
             case IPv4_6:
                 msg.append("IPv4 & IPv6");
+                WriteDebugInfo(DEBUG_INFO, QString("Check login type IPv4 & IPv6."));
                 break;
             default:
                 break;
@@ -362,15 +369,13 @@ bool WebLgn::checkLoginStatus(LoginType type)
     if(type == IPv4_6)
     {
         QString content;
-        if(200 == m_http.getUrlHtml(url4, content))
-        {
-            m_netType = BJUT_LAN;
-        }
-        else
+        // !!!!!检查状态时，不能确定所连网络，只有登陆可以确定
+        if(200 != m_http.getUrlHtml(url4, content))
         {
             m_netType = UnknownNet;
             if (g_bAppDebug)
             {
+                WriteDebugInfo(DEBUG_INFO, QString("Check IPv4: UnKnown Net"));
                 emit message(QDateTime::currentDateTime(), "Check IPv4:UnKnown Net");
             }
             return false;
@@ -385,6 +390,7 @@ bool WebLgn::checkLoginStatus(LoginType type)
         }
         else if (g_bAppDebug)
         {
+            WriteDebugInfo(DEBUG_INFO, QString("Check IPv4: Time OK"));
             emit message(QDateTime::currentDateTime(), "Check IPv4: Time OK");
         }
         pos = content.indexOf(regFlow);
@@ -397,6 +403,7 @@ bool WebLgn::checkLoginStatus(LoginType type)
         }
         else if (g_bAppDebug)
         {
+            WriteDebugInfo(DEBUG_INFO, QString("Check IPv4: Flow OK"));
             emit message(QDateTime::currentDateTime(), "Check IPv4: Flow OK");
         }
         pos = content.indexOf(regFee);
@@ -409,17 +416,15 @@ bool WebLgn::checkLoginStatus(LoginType type)
         }
         else if (g_bAppDebug)
         {
+            WriteDebugInfo(DEBUG_INFO, QString("Check IPv4: Fee OK"));
             emit message(QDateTime::currentDateTime(), "Check IPv4: Fee OK");
         }
-        if(200 == m_http.getUrlHtml(url6, content))
-        {
-            m_netType = BJUT_LAN;
-        }
-        else
+        if(200 != m_http.getUrlHtml(url6, content))
         {
             m_netType = UnknownNet;
             if (g_bAppDebug)
             {
+                WriteDebugInfo(DEBUG_INFO, QString("Check IPv6: UnKnown Net"));
                 emit message(QDateTime::currentDateTime(), "Check IPv6: UnKnown Net");
             }
             return false;
@@ -434,17 +439,14 @@ bool WebLgn::checkLoginStatus(LoginType type)
         }
         else if (g_bAppDebug)
         {
+            WriteDebugInfo(DEBUG_INFO, QString("Check IPv6: Time OK"));
             emit message(QDateTime::currentDateTime(), "Check IPv6: Time OK");
         }
     }
     else
     {
         QString content;
-        if(200 == m_http.getUrlHtml(url4, content))
-        {
-            m_netType = BJUT_LAN;
-        }
-        else
+        if(200 != m_http.getUrlHtml(url4, content))
         {
             m_netType = UnknownNet;
             return false;
@@ -465,6 +467,7 @@ bool WebLgn::checkLoginStatus(LoginType type)
         }
         else if (g_bAppDebug)
         {
+            WriteDebugInfo(DEBUG_INFO, QString("Check: Time OK"));
             emit message(QDateTime::currentDateTime(), "Check: Time OK");
         }
         pos = content.indexOf(regFlow);
@@ -478,6 +481,7 @@ bool WebLgn::checkLoginStatus(LoginType type)
         }
         else if (g_bAppDebug)
         {
+            WriteDebugInfo(DEBUG_INFO, QString("Check: Flow OK"));
             emit message(QDateTime::currentDateTime(), "Check: Flow OK");
         }
         pos = content.indexOf(regFee);
@@ -491,6 +495,7 @@ bool WebLgn::checkLoginStatus(LoginType type)
         }
         else if (g_bAppDebug)
         {
+            WriteDebugInfo(DEBUG_INFO, QString("Check: Fee OK"));
             emit message(QDateTime::currentDateTime(), "Check: Fee OK");
         }
     }
