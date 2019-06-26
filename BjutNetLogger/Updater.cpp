@@ -140,7 +140,7 @@ bool Updater::downloadNewPackage()
 #ifdef QT_DEBUG
             if (!suc) qDebug() << "Change permission faild." << endl;
 #endif
-            if(g_bAppDebug)
+            if(!suc && g_bAppDebug)
             {
                 WriteDebugInfo(DEBUG_FAIL, QString("Change permission faild.(%1)").arg(tempFile));
             }
