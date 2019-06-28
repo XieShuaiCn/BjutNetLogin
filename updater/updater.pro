@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 
-QT       += core gui
+QT       += core gui network
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -31,7 +31,8 @@ SOURCES += \
     FrmWelcome.cpp \
     FrmUpdate.cpp \
     FrmComplete.cpp \
-    FrmStep.cpp
+    FrmStep.cpp \
+    HttpClient.cpp
 
 HEADERS += \
         WndMain.h \
@@ -39,7 +40,8 @@ HEADERS += \
     FrmWelcome.h \
     FrmUpdate.h \
     FrmComplete.h \
-    FrmStep.h
+    FrmStep.h \
+    HttpClient.h
 
 RESOURCES += \
     ui.qrc

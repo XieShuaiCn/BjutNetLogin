@@ -57,21 +57,37 @@ void WndMain::finishSwitchFrame()
     {
         m_tmMoveFrame.stop();
         ++m_nCurrentStep;
+        m_btnLast->setEnabled(false);
+        m_btnNext->setEnabled(false);
+        m_btnCancel->setEnabled(false);
+        if(m_nCurrentStep == int(m_vecFrameStep.size())-1){
+            m_btnNext->setText("Finish");
+        }
+        else {
+            m_btnNext->setText("Next >>");
+        }
+        m_vecFrameStep[m_nCurrentStep]->doBefore();
+        m_vecFrameStep[m_nCurrentStep]->doProcess();
         m_btnLast->setEnabled(m_nCurrentStep > 0
                               && m_vecFrameStep[m_nCurrentStep]->canGoLast());
-        m_btnNext->setEnabled(m_nCurrentStep < m_vecFrameStep.size()
+        m_btnNext->setEnabled(m_nCurrentStep < int(m_vecFrameStep.size())
                               && m_vecFrameStep[m_nCurrentStep]->canGoNext());
-        m_btnCancel->setEnabled(m_btnCancel->isEnabled()
-                                & m_vecFrameStep[m_nCurrentStep]->canCancel());
+        m_btnCancel->setEnabled(m_vecFrameStep[m_nCurrentStep]->canCancel());
     }
     else if(m_nDirection < 0)
     {
         m_tmMoveFrame.stop();
         --m_nCurrentStep;
+        m_btnLast->setEnabled(false);
+        m_btnNext->setEnabled(false);
+        m_btnCancel->setEnabled(false);
+        m_vecFrameStep[m_nCurrentStep]->doBefore();
+        m_vecFrameStep[m_nCurrentStep]->doProcess();
         m_btnLast->setEnabled(m_nCurrentStep > 0
                               && m_vecFrameStep[m_nCurrentStep]->canGoLast());
         m_btnNext->setEnabled(m_nCurrentStep < int(m_vecFrameStep.size())
                               && m_vecFrameStep[m_nCurrentStep]->canGoNext());
+        m_btnCancel->setEnabled(m_vecFrameStep[m_nCurrentStep]->canCancel());
     }
 }
 
@@ -120,7 +136,6 @@ void WndMain::btnNextClicked()
         if(m_vecFrameStep[m_nCurrentStep]->canGoNext()
                 && m_vecFrameStep[m_nCurrentStep]->canProcess())
         {
-            m_vecFrameStep[m_nCurrentStep]->doProcess();
             m_vecFrameStep[m_nCurrentStep]->doAfter();
             m_nDirection = 10;
             doSwitchFrame();

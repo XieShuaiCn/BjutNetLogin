@@ -21,7 +21,7 @@ void WndMain::initUI()
     this->setWindowTitle("网关登录器 更新");
     this->setObjectName(QStringLiteral("WndMain"));
     this->setWindowIcon(QIcon(":/icon/logo.ico"));
-    this->setFixedSize(640, 480);
+    this->setFixedSize(500, 150);
     this->setFont(font_s105);
 
     m_frmShowStep = new QFrame(this);
@@ -37,7 +37,7 @@ void WndMain::initUI()
 
     // button group
     m_frmButton = new QFrame(this);
-    m_frmButton->setGeometry(QRect(10, this->height()-70, this->width()-20, 70));
+    m_frmButton->setGeometry(QRect(10, this->height()-55, this->width()-20, 55));
     m_frmButton->setFrameShape(QFrame::NoFrame);
     m_frmButton->setFrameShadow(QFrame::Plain);
     m_btnLast = new QPushButton("<< Last", m_frmButton);

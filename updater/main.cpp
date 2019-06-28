@@ -7,6 +7,8 @@
 #include "WndMain.h"
 #include "WndInit.h"
 
+QString g_strDistPath;
+
 int main(int argc, char *argv[])
 {
     QMap<QString, QString> mapArgv;
@@ -42,6 +44,13 @@ int main(int argc, char *argv[])
     qDebug() << app.applicationName() << endl;
     qDebug() << app.applicationPid() << endl;
     qDebug() << app.applicationVersion() << endl;
+#endif
+    g_strDistPath = QDir(mapArgv["dir"]).absolutePath();
+#ifdef QT_DEBUG
+    if(g_strDistPath != QDir::currentPath())
+    {
+        qDebug() << "Target dir is different from work path." << endl;
+    }
 #endif
     if(mapArgv.contains("update"))
     {

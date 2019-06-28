@@ -3,6 +3,10 @@
 FrmStep::FrmStep(QWidget* parent)
     : QFrame(parent)
 {
+    if(parent)
+    {
+        this->setGeometry(parent->geometry());
+    }
     this->setVisible(false);
 }
 
@@ -25,14 +29,22 @@ bool FrmStep::canProcess()
     return true;
 }
 
-void FrmStep::doBefore()
-{}
+bool FrmStep::doBefore()
+{
+    return true;
+}
 
-void FrmStep::doProcess()
-{}
+bool FrmStep::doProcess()
+{
+    return true;
+}
 
-void FrmStep::doAfter()
-{}
+bool FrmStep::doAfter()
+{
+    return true;
+}
 
-void FrmStep::doRollBack()
-{}
+bool FrmStep::doRollBack()
+{
+    return true;
+}

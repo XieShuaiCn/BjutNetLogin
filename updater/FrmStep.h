@@ -13,10 +13,10 @@ public:
 
     virtual bool canProcess();
 
-    virtual void doBefore();
-    virtual void doProcess();
-    virtual void doAfter();
-    virtual void doRollBack();
+    virtual bool doBefore();
+    virtual bool doProcess();
+    virtual bool doAfter();
+    virtual bool doRollBack();
 };
 
 #endif // FRMSTEP_H

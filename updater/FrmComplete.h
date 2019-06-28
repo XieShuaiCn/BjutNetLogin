@@ -10,6 +10,10 @@ class FrmComplete : public FrmStep
 public:
     FrmComplete(QWidget* parent = Q_NULLPTR);
 
+    virtual bool canCancel();
+
+    virtual bool canGoLast();
+
 private:
     QLabel *m_lblInfo;
 };
