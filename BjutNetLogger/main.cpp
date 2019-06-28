@@ -57,6 +57,7 @@ int main(int argc, char *argv[])
         }
     }
     g_strAppTempPath = tmpName;
+    QDir("/").mkpath(g_strAppTempPath);
     InitDebugFile(QDir(g_strAppTempPath).absoluteFilePath("bnl.log"));
     g_bAppDebug = mapArgv.contains("debug");
 

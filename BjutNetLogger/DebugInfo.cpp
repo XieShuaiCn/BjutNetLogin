@@ -42,19 +42,20 @@ void WriteDebugInfo(const QString &content, bool with_time, bool end_line)
 {
     if(!g_fileDebug.isOpen())
         return;
+    qint64 num = 0;
     if (with_time)
     {
         QDateTime time = QDateTime::currentDateTime();
         QString strCurrentTime = time.toString("[yyyy-MM-dd hh:mm:ss:zzz]");
         QByteArray tempData = strCurrentTime.toUtf8();
-        g_fileDebug.write(tempData.data());
+        num += g_fileDebug.write(tempData.data());
     }
     {
         QByteArray tempData = content.toUtf8();
-        g_fileDebug.write(tempData.data());
+        num += g_fileDebug.write(tempData.data());
     }
     if(end_line)
     {
-        g_fileDebug.write("\n");
+        num += g_fileDebug.write("\n");
     }
 }

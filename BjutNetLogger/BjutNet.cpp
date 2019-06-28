@@ -182,7 +182,7 @@ void BjutNet::checkLgn()
         if(m_tmCheckLgn.interval() != 1000*30)
             m_tmCheckLgn.start(1000*30);
     }
-    else if(WebLgn::UnknownNet == m_webLgn.getNetType())//非校园网
+    else if(!m_webLgn.checkCampusNet())//非校园网
     {
         if(m_tmCheckLgn.interval() != 1000*30)
             m_tmCheckLgn.start(1000*30);

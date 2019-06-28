@@ -384,6 +384,13 @@ bool WebLgn::checkLoginStatus(LoginType type)
         if(pos < 0)
         {
             emit message(QDateTime::currentDateTime(), QString("没有登录网关4，未检测到时间。"));
+            if (g_bAppDebug){
+                WriteDebugInfo(DEBUG_FAIL, QString("Check IPv4: No Time"));
+                WriteDebugInfo(content.replace('\r', ' ').replace('\n', ' '), false);
+            }
+#ifdef QT_DEBUG
+            qDebug() << content << endl;
+#endif
             m_isOnline = false;
             emit status_update(false, m_nTime, m_nFlow, m_nFee);
             return false;
@@ -517,7 +524,7 @@ bool WebLgn::checkLoginStatus(LoginType type)
     return true;
 }
 
-bool WebLgn::checkNetStatus()
+bool WebLgn::checkCampusNet()
 {
 //    int id = QHostInfo::lookupHost("www.bjut.edu.cn", nullptr, nullptr);
 //    QHostInfo info(id);
@@ -595,7 +602,7 @@ void WebLgn::online_status_change(bool online)
 {
     if(online)//网卡在线，非账号在线
     {
-        if(this->checkNetStatus() && !this->checkLoginStatus())
+        if(this->checkCampusNet() && !this->checkLoginStatus())
         {
             this->login();
         }

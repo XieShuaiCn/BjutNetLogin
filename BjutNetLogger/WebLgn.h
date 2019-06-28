@@ -32,7 +32,7 @@ public:
     //检测网关状态
     bool checkLoginStatus(LoginType type = AutoLoginType);
     //检测网络是否畅通
-    bool checkNetStatus();
+    bool checkCampusNet();
     int getTime() const
     {
         return m_nTime;

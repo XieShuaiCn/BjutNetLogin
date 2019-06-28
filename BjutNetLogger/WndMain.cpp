@@ -57,7 +57,7 @@ WndMain::WndMain(WndTrayIcon *tray, QWidget *parent) :
     //启动网关监控
     if(m_net->getAccount().size() <= 0)
     {
-        on_btnDetail_clicked();
+        m_tray->cmdShowSettingWnd();
     }
 }
 
@@ -163,13 +163,16 @@ void WndMain:: on_show()
         m_lblService->setText(QString("未检测到套餐"));
     }
     //更新页面显示的流量状态
-    lgn.checkLoginStatus();
+    bool loged = lgn.checkLoginStatus();
     //on_account_status(lgn.getTime() > 0, lgn.getTime(), lgn.getFlow(), lgn.getFee());
-    m_updater.checkUpdate();
-    if(m_updater.needUpdate()){
-        m_bNeedUpdate = true;
-        QString ver("%1 <font color=#dd3333>最新版本：%2 点我更新！</font>");
-        m_lblVersion->setText(ver.arg(m_updater.getOldVersion(), m_updater.getNewVersion()));
+    // 没有登陆外网时，连不上服务器，不检查更新
+    if(loged){
+        m_updater.checkUpdate();
+        if(m_updater.needUpdate()){
+            m_bNeedUpdate = true;
+            QString ver("%1 <font color=#dd3333>最新版本：%2 点我更新！</font>");
+            m_lblVersion->setText(ver.arg(m_updater.getOldVersion(), m_updater.getNewVersion()));
+        }
     }
 }
 
@@ -228,6 +231,13 @@ void WndMain::on_account_status(bool login, int time, int flow, int fee)
         strFlowTip.append(QString("，剩余%1%2").arg(fflow).arg(flowUnit[flowUnitIndex]));
         m_frmFlowGraph->setToolTip(strFlowTip);
         this->update();
+    }
+    auto service = m_net->getWebJfself().getServiceName();
+    if(service.size()){
+        m_lblService->setText(service);
+    }
+    else{
+        m_lblService->setText(QString("未检测到套餐"));
     }
 }
 
