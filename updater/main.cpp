@@ -1,8 +1,6 @@
 #include <QObject>
 #include <QDebug>
-#ifdef QT_DEBUG
 #include <QDir>
-#endif
 #include <QApplication>
 #include "WndMain.h"
 #include "WndInit.h"
@@ -11,6 +9,16 @@ QString g_strDistPath;
 
 int main(int argc, char *argv[])
 {
+    //Debugging complex command lines is currently not supported on Windows.
+#if defined(Q_OS_WIN32) && defined(QT_DEBUG)
+    char *argv0 = argv[0];
+    argv = new char*[4];
+    argv[0] = argv0;
+    argv[1] = "-update";
+    argv[2] = "-dir";
+    argv[3] = "D:\\Program Files (x86)\\BjutNetLogin";
+    argc = 4;
+#endif
     QMap<QString, QString> mapArgv;
     {
         QString lastArg;
@@ -45,7 +53,6 @@ int main(int argc, char *argv[])
     qDebug() << app.applicationPid() << endl;
     qDebug() << app.applicationVersion() << endl;
 #endif
-    g_strDistPath = QDir(mapArgv["dir"]).absolutePath();
 #ifdef QT_DEBUG
     if(g_strDistPath != QDir::currentPath())
     {
@@ -54,11 +61,13 @@ int main(int argc, char *argv[])
 #endif
     if(mapArgv.contains("update"))
     {
+        g_strDistPath = QDir(mapArgv["dir"]).absolutePath();
         WndMain wm;
         wm.show();
         return app.exec();
     }
     else {
+        g_strDistPath = QDir::currentPath();
         WndInit wi(&app);
         wi.show();
         return app.exec();

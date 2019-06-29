@@ -11,10 +11,15 @@ FrmComplete::FrmComplete(QWidget* parent)
 
 bool FrmComplete::canCancel()
 {
-    return false;
+    return true;
 }
 
 bool FrmComplete::canGoLast()
+{
+    return false;
+}
+
+bool FrmComplete::canGoNext()
 {
     return false;
 }

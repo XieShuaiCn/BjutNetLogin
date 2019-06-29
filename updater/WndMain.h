@@ -8,6 +8,7 @@
 
 class QFrame;
 class QPushButton;
+class QCloseEvent;
 
 class WndMain : public QWidget
 {
@@ -31,6 +32,8 @@ public slots:
     void btnNextClicked();
     void btnLastClicked();
     void btnCancelClicked();
+protected:
+    void closeEvent(QCloseEvent *event);
 
 private:
     QFrame *m_frmShowStep;

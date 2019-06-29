@@ -24,7 +24,11 @@ WndInit::WndInit(QApplication *app)
       m_app(app)
 {
     Q_ASSERT(app!=nullptr);
+#ifdef Q_OS_WIN32
+    m_strBinName = app->applicationName()+".exe";
+#else
     m_strBinName = app->applicationName();
+#endif
     m_strBinDir = app->applicationDirPath();
     m_strBinFile = QDir(m_strBinDir).absoluteFilePath(m_strBinName);
     this->setWindowTitle("网关登录器 更新");
@@ -65,23 +69,57 @@ void WndInit::init_updater()
     }
     if(QDir("/").mkpath(tmpName))
     {
-        this->setValue(40);
+        this->setValue(10);
     }
     else
     {
         this->setLabelText("临时目录创建失败");
     }
     m_strTmpDir = tmpName;
-    m_strTmpFile = QDir(m_strTmpDir).absoluteFilePath(m_strBinName);
+    QDir dirBin(m_strBinDir);
+    QDir dirTmp(m_strTmpDir);
+    m_strTmpFile = dirTmp.absoluteFilePath(m_strBinName);
+    QStringList dependents{
+#ifdef Q_OS_WIN32
+        m_strBinName, "platforms\\qwindows.dll",
+        "Qt5Core.dll", "Qt5Gui.dll", "Qt5Widgets.dll", "Qt5Network.dll",
+        "libstdc++-6.dll", "libgcc_s_dw2-1.dll", "libwinpthread-1.dll"
+#else
+        m_strBinName, "platforms\\libqlinuxfb.so", "platforms\\libqxcb.so",
+        "libQt5Core.so.5", "libQt5Gui.so.5", "libQt5Widgets.so.5", "libQt5Network.so.5",
+        "libQt5XcbQpa.so.5", "libQt5DBus.so.5"
+#endif
+    };
+    QStringList dependents_dir{ "platforms" };
     // copy file
-    if(QFile::copy(m_strBinFile, m_strTmpFile))
-    {
-        this->setValue(80);
-    }
-    else
-    {
+    bool copy_fail = false;
+    do{
+        int sum = dependents.size() + dependents_dir.size();
+        float step = 80.0 / sum;
+        for(auto &dir : dependents_dir){
+            if(!dirTmp.mkpath(dir)) {
+                copy_fail = true;
+                break;
+            }
+            this->setValue(int(this->value()+step));
+
+        }
+        if(copy_fail) break;
+        for(auto &file : dependents)
+        {
+            auto strBinFile = dirBin.absoluteFilePath(file);
+            auto strTmpFile = dirTmp.absoluteFilePath(file);
+            if(!QFile::copy(strBinFile, strTmpFile)){
+                copy_fail = true;
+                break;
+            }
+            this->setValue(int(this->value()+step));
+        }
+    }while(false);
+    if (copy_fail){
         this->setLabelText("更新初始化失败");
     }
+    this->setValue(90);
 
     QStringList args;
     args.push_back("-update");

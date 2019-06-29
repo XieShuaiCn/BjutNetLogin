@@ -1,4 +1,5 @@
 #include "WndMain.h"
+#include <QtGui/QCloseEvent>
 #include <QtWidgets/QFrame>
 #include <QtWidgets/QPushButton>
 
@@ -61,10 +62,10 @@ void WndMain::finishSwitchFrame()
         m_btnNext->setEnabled(false);
         m_btnCancel->setEnabled(false);
         if(m_nCurrentStep == int(m_vecFrameStep.size())-1){
-            m_btnNext->setText("Finish");
+            m_btnCancel->setText("Finish");
         }
         else {
-            m_btnNext->setText("Next >>");
+            m_btnCancel->setText("Cancel");
         }
         m_vecFrameStep[m_nCurrentStep]->doBefore();
         m_vecFrameStep[m_nCurrentStep]->doProcess();
@@ -137,7 +138,7 @@ void WndMain::btnNextClicked()
                 && m_vecFrameStep[m_nCurrentStep]->canProcess())
         {
             m_vecFrameStep[m_nCurrentStep]->doAfter();
-            m_nDirection = 10;
+            m_nDirection = 2;
             doSwitchFrame();
         }
     }
@@ -150,7 +151,7 @@ void WndMain::btnLastClicked()
         if(m_vecFrameStep[m_nCurrentStep]->canGoLast())
         {
             m_vecFrameStep[m_nCurrentStep]->doRollBack();
-            m_nDirection = -10;
+            m_nDirection = -2;
             doSwitchFrame();
         }
     }
@@ -166,5 +167,16 @@ void WndMain::btnCancelClicked()
         }
     }
     this->close();
+}
+
+void WndMain::closeEvent(QCloseEvent *event)
+{
+    //取消关闭命令
+    if(m_vecFrameStep[m_nCurrentStep]->canCancel()){
+        btnCancelClicked();
+    }
+    else{
+        event->setAccepted(false);
+    }
 }
 

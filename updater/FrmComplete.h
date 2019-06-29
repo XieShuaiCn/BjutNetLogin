@@ -14,6 +14,8 @@ public:
 
     virtual bool canGoLast();
 
+    virtual bool canGoNext();
+
 private:
     QLabel *m_lblInfo;
 };

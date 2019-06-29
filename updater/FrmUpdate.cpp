@@ -121,6 +121,7 @@ bool FrmUpdate::doProcess()
         return false;
     }
     for(host_index=0, http_code=0, content.clear(); host_index < vecHost.size() && http_code != 200; ++host_index){
+        m_lblInfo->setText(QString("Downloading mainfest... (#%1)").arg(host_index));
         http_code = http.getUrlHtml(QUrl(vecHost[host_index] + "online/" + strUrlPlatform + "/content.json"), content);
     }
     --host_index;
