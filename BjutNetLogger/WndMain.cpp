@@ -146,34 +146,13 @@ void WndMain::paintEvent(QPaintEvent *event)
 
 void WndMain:: on_show()
 {
-    WebLgn &lgn = m_net->getWebLgn();
-    WebJfself &jfself = m_net->getWebJfself();
-    jfself.refreshAccount();
-    jfself.refreshOnline();
-    if(jfself.getTotalFlow() > 0){
-        m_lblFlowUsed->setText(QString("已用：%1 %").arg(100 * lgn.getFlow() / jfself.getTotalFlow() / 1024));
+    m_updater.checkUpdate();
+    if(m_updater.needUpdate()){
+        m_bNeedUpdate = true;
+        QString ver("%1 <font color=#dd3333>最新版本：%2 点我更新！</font>");
+        m_lblVersion->setText(ver.arg(m_updater.getOldVersion(), m_updater.getNewVersion()));
     }
-    else {
-         m_lblFlowUsed->setText(QString("已用：-- %"));
-    }
-    if(jfself.getServiceName().size()){
-        m_lblService->setText(jfself.getServiceName());
-    }
-    else{
-        m_lblService->setText(QString("未检测到套餐"));
-    }
-    //更新页面显示的流量状态
-    bool loged = lgn.checkLoginStatus();
-    //on_account_status(lgn.getTime() > 0, lgn.getTime(), lgn.getFlow(), lgn.getFee());
-    // 没有登陆外网时，连不上服务器，不检查更新
-    if(loged){
-        m_updater.checkUpdate();
-        if(m_updater.needUpdate()){
-            m_bNeedUpdate = true;
-            QString ver("%1 <font color=#dd3333>最新版本：%2 点我更新！</font>");
-            m_lblVersion->setText(ver.arg(m_updater.getOldVersion(), m_updater.getNewVersion()));
-        }
-    }
+    on_btnRefresh_clicked();
 }
 
 void WndMain::on_account_status(bool login, int time, int flow, int fee)
@@ -304,9 +283,40 @@ void WndMain::resizeEvent(QResizeEvent *event)
 void WndMain::on_btnRefresh_clicked()
 {
     m_btnRefresh->setEnabled(false);
-    m_net->getWebLgn().checkLoginStatus();
-    m_net->getWebJfself().refreshAccount();
-    m_net->getWebJfself().refreshOnline();
+    WebLgn &lgn = m_net->getWebLgn();
+    WebJfself &jfself = m_net->getWebJfself();
+    on_txtMsg_message(QDateTime::currentDateTime(), "刷新账户信息");
+    jfself.refreshAccount();
+    //on_txtMsg_message(QDateTime::currentDateTime(), "刷新在线设备");
+    jfself.refreshOnline();
+    //on_txtMsg_message(QDateTime::currentDateTime(), "更新界面信息");
+    if(jfself.getTotalFlow() > 0){
+        m_lblFlowUsed->setText(QString("已用：%1 %").arg(100 * lgn.getFlow() / jfself.getTotalFlow() / 1024));
+    }
+    else {
+         m_lblFlowUsed->setText(QString("已用：-- %"));
+    }
+    if(jfself.getServiceName().size()){
+        m_lblService->setText(jfself.getServiceName());
+    }
+    else{
+        m_lblService->setText(QString("未检测到套餐"));
+    }
+    //更新页面显示的流量状态
+    on_txtMsg_message(QDateTime::currentDateTime(), "检查网络状态");
+    bool loged = lgn.checkLoginStatus();
+    //on_account_status(lgn.getTime() > 0, lgn.getTime(), lgn.getFlow(), lgn.getFee());
+    // 没有登陆外网时，连不上服务器，不检查更新
+    if(loged){
+        on_txtMsg_message(QDateTime::currentDateTime(), "检查版本更新");
+        m_updater.checkUpdate();
+        if(m_updater.needUpdate()){
+            m_bNeedUpdate = true;
+            QString ver("%1 <font color=#dd3333>最新版本：%2 点我更新！</font>");
+            m_lblVersion->setText(ver.arg(m_updater.getOldVersion(), m_updater.getNewVersion()));
+        }
+    }
+    on_txtMsg_message(QDateTime::currentDateTime(), "刷新完成");
     m_btnRefresh->setEnabled(true);
 }
 

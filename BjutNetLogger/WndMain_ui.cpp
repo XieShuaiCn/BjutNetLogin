@@ -152,7 +152,7 @@ void WndMain::initUI()
     m_lblCopyTip->setFont(font_s120);
     m_lblCopyTip->setStyleSheet("color:#808080;");
 
-    //
+    //预约套餐
     m_frmOperation = new QFrame(this);
     m_frmOperation->setGeometry(QRect(390, 190, 170, 130));
     m_frmOperation->setFrameShape(QFrame::NoFrame);
@@ -210,7 +210,7 @@ void WndMain::initUI()
     m_btnOffline2->setText(QString("强制下线"));
     m_lblCopyTip->setText(QString("双击复制IP"));
     m_btnOfficalWeb->setText(QString("办理业务"));
-    m_lblCurrentBook->setText(QString("已预约:[请刷新数据]"));
+    m_lblCurrentBook->setText(QString("已预约:[请刷新套餐]"));
     m_btnRefreshBook->setText(QString("刷新套餐"));
     m_btnSubmitBook->setText(QString("预约套餐"));
     m_lblVersion->setText(QString("版本号：") + m_updater.getOldVersion());

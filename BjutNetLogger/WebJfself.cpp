@@ -106,9 +106,8 @@ bool WebJfself::refreshAccount()
         if(!checkLogin()) return false;
     }
     QByteArray content;
-    int status = m_http.downUrlData(QUrl(QString("https://jfself.bjut.edu.cn/refreshaccount?t=%1")
-                                        .arg(1.0 * qrand() / RAND_MAX)),
-                                    content);
+    QString strUrl = QString("https://jfself.bjut.edu.cn/refreshaccount?t=%1").arg(1.0 * qrand() / RAND_MAX);
+    int status = m_http.downUrlData(QUrl(strUrl), content);
     if(status == 200 || status == 0)
     {
         QJsonParseError jp_err;
@@ -194,11 +193,6 @@ bool WebJfself::refreshOnline()
     QString content;
     int status = m_http.getUrlHtml(QUrl(QString("https://jfself.bjut.edu.cn/nav_offLine")),
                                    content);
-//    QFile f("nav_offline.0.html");
-//    f.open(QIODevice::ReadOnly|QIODevice::Text);
-//    content = QString(f.readAll());
-//    f.close();
-//    int status = 200;
     if(status == 200 || status == 0)
     {
         int i1 = content.indexOf("<tbody>", 0, Qt::CaseInsensitive);
@@ -267,11 +261,6 @@ bool WebJfself::refreshBookService()
     QString content;
     int status = m_http.getUrlHtml(QUrl(QString("https://jfself.bjut.edu.cn/nav_servicedefaultbook")),
                                    content);
-//    QFile f("nav_offline.0.html");
-//    f.open(QIODevice::ReadOnly|QIODevice::Text);
-//    content = QString(f.readAll());
-//    f.close();
-//    int status = 200;
     if(status == 200 || status == 0)
     {
         int idx1 = content.indexOf("<form");
@@ -319,11 +308,6 @@ bool WebJfself::submitBookService(const QString &id)
     arg.insert("serid", id);
     int status = m_http.postUrlHtml(QUrl(QString("https://jfself.bjut.edu.cn/selfservicebookAction")),
                                    arg, content);
-//    QFile f("nav_offline.0.html");
-//    f.open(QIODevice::ReadOnly|QIODevice::Text);
-//    content = QString(f.readAll());
-//    f.close();
-//    int status = 200;
     if(status == 200 || status == 0)
     {
         return true;

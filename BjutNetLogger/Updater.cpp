@@ -175,7 +175,7 @@ bool Updater::runMaintainTool()
 #ifdef Q_OS_WIN32
             .absoluteFilePath("updater.exe");
 #else
-            .absoluteFilePath("updater");
+            .absoluteFilePath("updater.sh");
 #endif
     return QProcess::startDetached(binFile);
 }

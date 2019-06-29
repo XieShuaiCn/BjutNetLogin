@@ -74,6 +74,7 @@ void WndInit::init_updater()
     else
     {
         this->setLabelText("临时目录创建失败");
+        return;
     }
     m_strTmpDir = tmpName;
     QDir dirBin(m_strBinDir);
@@ -85,7 +86,7 @@ void WndInit::init_updater()
         "Qt5Core.dll", "Qt5Gui.dll", "Qt5Widgets.dll", "Qt5Network.dll",
         "libstdc++-6.dll", "libgcc_s_dw2-1.dll", "libwinpthread-1.dll"
 #else
-        m_strBinName, "platforms\\libqlinuxfb.so", "platforms\\libqxcb.so",
+        m_strBinName, "platforms/libqlinuxfb.so", "platforms/libqxcb.so",
         "libQt5Core.so.5", "libQt5Gui.so.5", "libQt5Widgets.so.5", "libQt5Network.so.5",
         "libQt5XcbQpa.so.5", "libQt5DBus.so.5"
 #endif
@@ -118,6 +119,7 @@ void WndInit::init_updater()
     }while(false);
     if (copy_fail){
         this->setLabelText("更新初始化失败");
+        return;
     }
     this->setValue(90);
 
@@ -133,5 +135,6 @@ void WndInit::init_updater()
     else
     {
         this->setLabelText("更新启动失败");
+        return;
     }
 }
