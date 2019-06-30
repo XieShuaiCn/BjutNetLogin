@@ -21,6 +21,7 @@
 #include <QHostInfo>
 #include <QHostAddress>
 #include <QClipboard>
+#include <QDir>
 
 WndMain::WndMain(WndTrayIcon *tray, QWidget *parent) :
     QWidget(parent),
@@ -415,7 +416,7 @@ void WndMain::on_lblVersion_clicked()
 {
     QMessageBox mb(this);
     if(m_bNeedUpdate) {
-        QString msg = QString("新版本更新：\n版本号：%1\n%2")
+        QString msg = QString("新版本更新：\n版本号：%1\n%2\n(更新过程尽可能不消耗流量)")
                 .arg(m_updater.getNewVersion())
                 .arg(m_updater.getNewIntroduction());
         mb.setWindowTitle("立即更新");
@@ -426,27 +427,33 @@ void WndMain::on_lblVersion_clicked()
                 m_tray->cmdExitApp();
             }
             else{
-                m_dlgProgress = new QProgressDialog("正在下载....", "无法取消", 0, 101, this);
-                m_dlgProgress->setWindowModality(Qt::WindowModal);
-                m_dlgProgress->setCancelButton(nullptr);
-                m_dlgProgress->show();
-                connect(&m_updater, &Updater::downloadProgress, this, &WndMain::downloadProgress);
-                if(m_updater.downloadNewPackage())
-                {
-                   mb.setWindowTitle("更新成功");
-                   mb.setText("正在启动....");
-                   if(m_tray)
-                   {
-                       m_tray->cmdExitApp();
-                   }
-                } else {
-                   mb.setWindowTitle("更新失败");
-                   mb.setText("软件更新失败，请稍候重试。");
+                QMessageBox mbnew(this);
+                mbnew.setText("启动更新工具失败，是否下载完整安装包？");
+                mbnew.setWindowTitle("完整安装");
+                mbnew.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
+                if(QMessageBox::Yes == mbnew.exec()){
+                    m_dlgProgress = new QProgressDialog("正在下载....", "无法取消", 0, 101, this);
+                    m_dlgProgress->setWindowModality(Qt::WindowModal);
+                    m_dlgProgress->setCancelButton(nullptr);
+                    m_dlgProgress->show();
+                    connect(&m_updater, &Updater::downloadProgress, this, &WndMain::downloadProgress);
+                    if(m_updater.downloadNewPackage())
+                    {
+                       mb.setWindowTitle("更新成功");
+                       mb.setText("正在启动....");
+                       if(m_tray)
+                       {
+                           m_tray->cmdExitApp();
+                       }
+                    } else {
+                       mb.setWindowTitle("更新失败");
+                       mb.setText("软件更新失败，请稍候重试。");
+                    }
+                    disconnect(&m_updater, nullptr, nullptr, nullptr);
+                    mb.setStandardButtons(QMessageBox::Ok);
+                    mb.exec();
+                    m_dlgProgress->close();
                 }
-                disconnect(&m_updater, nullptr, nullptr, nullptr);
-                mb.setStandardButtons(QMessageBox::Ok);
-                mb.exec();
-                m_dlgProgress->close();
             }
         }
     } else {

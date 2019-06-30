@@ -171,11 +171,11 @@ bool Updater::doInstall(const QString &local_path)
 
 bool Updater::runMaintainTool()
 {
-    QString binFile = QDir(QApplication::applicationDirPath())
 #ifdef Q_OS_WIN32
-            .absoluteFilePath("updater.exe");
+    return QProcess::startDetached("maintain.exe");
 #else
-            .absoluteFilePath("updater.sh");
-#endif
+    QString binFile = QDir(QApplication::applicationDirPath())
+            .absoluteFilePath("maintain.sh");
     return QProcess::startDetached(binFile);
+#endif
 }
