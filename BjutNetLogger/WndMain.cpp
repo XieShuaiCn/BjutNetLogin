@@ -427,6 +427,7 @@ void WndMain::on_lblVersion_clicked()
                 m_tray->cmdExitApp();
             }
             else{
+#ifdef Q_OS_WIN32
                 QMessageBox mbnew(this);
                 mbnew.setText("启动更新工具失败，是否下载完整安装包？");
                 mbnew.setWindowTitle("完整安装");
@@ -454,6 +455,14 @@ void WndMain::on_lblVersion_clicked()
                     mb.exec();
                     m_dlgProgress->close();
                 }
+#else
+                QMessageBox mbnew(this);
+                mbnew.setText("启动更新工具失败，请到官网下载完整安装包。");
+                mbnew.setWindowTitle("完整安装");
+                mbnew.setStandardButtons(QMessageBox::Ok);
+                mbnew.exec();
+                QDesktopServices::openUrl(QUrl("http://bnl.hrrcn.com/"));
+#endif
             }
         }
     } else {

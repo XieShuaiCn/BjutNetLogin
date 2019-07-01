@@ -39,6 +39,9 @@ int main(int argc, char *argv[])
         if(nm.startsWith("./")){
             nm = nm.right(nm.size()-2);
         }
+        if(nm.startsWith(strDistPath)){
+            nm = nm.right(nm.size()-strDistPath.size());
+        }
         auto size = fi.size();
         auto p = fi.permissions();
         QCryptographicHash hash(QCryptographicHash::Md5);
@@ -46,7 +49,9 @@ int main(int argc, char *argv[])
         if(fd.open(QFile::ReadOnly)){
             hash.addData(fd.readAll());
         }
-        vecClientFiles.emplace_back(nm, size, QString(hash.result().toHex()), p.operator Int());
+        auto hash_data = hash.result().toHex();
+        std::cout << nm.toStdString() << "  " << size << " " << hash_data.toStdString() << std::endl;
+        vecClientFiles.emplace_back(nm, size, QString(hash_data), p.operator Int());
     }
     // convert to json
     QJsonArray jfilesarray;

@@ -179,7 +179,7 @@ int HttpClient::downloadFile(const QUrl &url, const QByteArray &arg, const QStri
     //int status = pReply->rawHeader("status").toInt();
     //读取
     QFile file(fileName);
-    if(status < 300 && file.open(QIODevice::ReadWrite))
+    if(status == 200 && file.open(QIODevice::WriteOnly))
     {
         int len = 1024*128;
         char *data = new char[1024*128];
